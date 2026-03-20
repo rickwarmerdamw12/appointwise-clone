@@ -2,7 +2,7 @@
  * HTTP API Server (Webserver)
  *
  * Dit is het "zenuwcentrum" van de applicatie. De server:
- * 1. Ontvangt HTTP-verzoeken (van het dashboard, de API, of Twilio)
+ * 1. Ontvangt HTTP-verzoeken (van het dashboard, de API, Twilio, of Meta)
  * 2. Routeert ze naar de juiste handler
  * 3. Stuurt een antwoord terug
  *
@@ -19,12 +19,17 @@
  * MULTI-TENANT ENDPOINTS:
  * Alle tenant-gerelateerde endpoints beginnen met /api/tenants.
  * CRUD = Create (aanmaken), Read (lezen), Update (bijwerken), Delete (verwijderen)
+ *
+ * WEBHOOKS:
+ * - /webhook/whatsapp  -> Twilio WhatsApp berichten (inkomende berichten van leads)
+ * - /webhook/meta      -> Meta lead form webhooks (nieuwe leads vanuit advertenties)
  */
 
 import express from "express"; // Het Express webframework
 import path from "path"; // Node.js module voor bestandspaden
 import { config } from "./config"; // Onze configuratie (poort, etc.)
 import webhookRouter from "./webhook"; // De WhatsApp webhook handler
+import metaWebhookRouter from "./meta-webhook"; // De Meta lead form webhook handler (NIEUW!)
 import {
   handleMessage,
   startConversation,
@@ -42,11 +47,16 @@ const app = express();
 
 // === MIDDLEWARE ===
 // Middleware zijn functies die ELKE request verwerken VOORDAT ze bij een route komen.
+// Ze worden uitgevoerd in de volgorde waarin ze zijn geregistreerd.
 
 /**
  * express.json() — Parse JSON-data uit de request body.
  * Als iemand JSON stuurt (bijv. {"name": "test"}), zet deze middleware
  * het om naar een JavaScript-object dat beschikbaar is via req.body.
+ *
+ * Dit wordt gebruikt door:
+ * - Het dashboard (API-aanroepen)
+ * - De Meta webhook (lead-data in JSON-formaat)
  */
 app.use(express.json());
 
@@ -62,16 +72,32 @@ app.use(express.urlencoded({ extended: true }));
  * Serveer het dashboard als statisch bestand.
  * express.static() vertelt Express: "als iemand een bestand vraagt,
  * zoek het in deze map en stuur het terug."
+ *
+ * Bijv. als je naar http://localhost:3000/ gaat, krijg je dashboard.html.
  */
 app.use(express.static(path.join(__dirname, "public")));
 
-// === WHATSAPP WEBHOOK ===
+// === WEBHOOKS ===
+
 /**
- * Mount de webhook-router op /webhook.
+ * Mount de WhatsApp webhook-router op /webhook.
  * Dit betekent: alle routes in webhookRouter worden voorafgegaan door /webhook.
  * Dus de route POST /whatsapp in de router wordt POST /webhook/whatsapp.
+ *
+ * Twilio stuurt inkomende WhatsApp-berichten naar dit endpoint.
  */
 app.use("/webhook", webhookRouter);
+
+/**
+ * Mount de Meta webhook-router op /webhook/meta.
+ * Dit endpoint ontvangt:
+ * - GET /webhook/meta  -> Meta webhook verificatie (bij het opzetten)
+ * - POST /webhook/meta -> Nieuwe leads vanuit Meta advertenties
+ *
+ * Meta stuurt lead-data naar dit endpoint wanneer iemand een lead formulier invult
+ * op Facebook of Instagram.
+ */
+app.use("/webhook/meta", metaWebhookRouter);
 
 // ============================================
 // === TENANT API ENDPOINTS (CRUD) ===
@@ -320,11 +346,15 @@ app.post("/conversations/:id/message", async (req, res) => {
 /**
  * app.listen() start de webserver op de geconfigureerde poort.
  * De callback-functie wordt aangeroepen zodra de server klaar is.
+ *
+ * Na het opstarten toont de server alle beschikbare endpoints,
+ * zodat je makkelijk kunt zien welke URLs je kunt gebruiken.
  */
 app.listen(config.port, () => {
   console.log(`\n🚀 Bureau-Assist API draait op http://localhost:${config.port}`);
   console.log(`📊 Dashboard: http://localhost:${config.port}/`);
   console.log(`📱 WhatsApp Webhook: http://localhost:${config.port}/webhook/whatsapp`);
+  console.log(`📲 Meta Webhook: http://localhost:${config.port}/webhook/meta`);
   console.log(`\nAPI endpoints:`);
   console.log(`  GET    /api/tenants                    - Alle tenants ophalen`);
   console.log(`  POST   /api/tenants                    - Nieuwe tenant aanmaken`);
@@ -334,5 +364,9 @@ app.listen(config.port, () => {
   console.log(`  GET    /api/tenants/:id/stats          - Statistieken per tenant`);
   console.log(`  GET    /conversations                  - Alle gesprekken`);
   console.log(`  POST   /conversations/:id/message      - Bericht sturen`);
+  console.log(`\nWebhooks:`);
+  console.log(`  POST   /webhook/whatsapp               - Twilio WhatsApp webhook`);
+  console.log(`  GET    /webhook/meta                    - Meta webhook verificatie`);
+  console.log(`  POST   /webhook/meta                    - Meta lead form webhook`);
   console.log("");
 });

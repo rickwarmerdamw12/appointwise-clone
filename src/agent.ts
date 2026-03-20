@@ -4,23 +4,28 @@
  * Dit is het HART van de applicatie. Hier praat onze AI-agent met leads.
  *
  * HOE WERKT HET?
- * 1. Een lead stuurt een bericht (bijv. via WhatsApp)
- * 2. We bouwen een "system prompt" — instructies voor de AI over hoe ze moet reageren
- * 3. We sturen het gesprek naar Claude (Anthropic's AI)
- * 4. Claude genereert een slim antwoord
- * 5. We slaan alles op en sturen het antwoord terug
+ * 1. Een lead komt binnen via een Meta advertentie (Facebook/Instagram)
+ * 2. De lead heeft al basisinfo ingevuld: naam, telefoon, email, bedrijf, website
+ * 3. De bot begroet de lead bij NAAM en stelt alleen EXTRA kwalificatievragen
+ * 4. Na 2-5 vragen bepaalt de bot of de lead geschikt is
+ * 5. Geschikt? -> Stuur een boekingslink voor een kennismakingsgesprek
+ * 6. Niet geschikt? -> Wijs vriendelijk af met uitleg waarom
+ *
+ * BELANGRIJK: De bot vraagt NOOIT naar naam, telefoon, email, bedrijf of website.
+ * Deze informatie is al bekend vanuit het Meta lead formulier.
+ * De bot stelt alleen de kwalificatievragen (branche, marketing, budget, etc.)
  *
  * MULTI-TENANT: Elke tenant heeft eigen instellingen (eigen agent-naam, eigen vragen, etc.)
  * De AI-agent past zich aan per tenant.
  */
 
 import Anthropic from "@anthropic-ai/sdk"; // De officiële Anthropic SDK om met Claude te praten
-import { ConversationStore, type LeadInfo, type Message } from "./conversation"; // Ons gesprekkengeheugen
+import { ConversationStore, type LeadInfo, type Message, type MetaLeadData } from "./conversation"; // Ons gesprekkengeheugen
 import { TenantStore, type Tenant } from "./tenant"; // Het multi-tenant systeem
 
 /**
  * Maak één gedeelde ConversationStore aan.
- * Deze wordt geëxporteerd zodat andere bestanden (server.ts, webhook.ts)
+ * Deze wordt geëxporteerd zodat andere bestanden (server.ts, webhook.ts, meta-webhook.ts)
  * dezelfde gespreksdata kunnen gebruiken.
  */
 export const store = new ConversationStore();
@@ -69,14 +74,19 @@ function getAnthropicClient(tenant: Tenant): Anthropic {
  * Het vertelt de AI:
  * - Wie ze is (naam, rol)
  * - Hoe ze moet praten (toon, stijl)
- * - Welke vragen ze moet stellen
+ * - Welke informatie BEKEND is (vanuit Meta lead form)
+ * - Welke EXTRA vragen ze moet stellen
  * - Wanneer een lead gekwalificeerd is
  * - Welke regels ze moet volgen
  *
+ * NIEUW: De prompt bevat nu de pre-filled lead informatie als die beschikbaar is.
+ * Zo weet de AI dat ze naam, email, etc. NIET hoeft te vragen.
+ *
  * @param tenant - De tenant-instellingen (elke klant heeft andere instructies)
+ * @param leadInfo - Optionele pre-filled lead info vanuit Meta (als beschikbaar)
  * @returns Een lange tekst met alle instructies voor Claude
  */
-function buildSystemPrompt(tenant: Tenant): string {
+function buildSystemPrompt(tenant: Tenant, leadInfo?: Partial<LeadInfo>): string {
   // We bouwen de vragen-lijst op met nummers (1. vraag, 2. vraag, etc.)
   const questionsFormatted = tenant.qualificationQuestions
     .map((q, i) => `${i + 1}. ${q}`) // 'map' zet elk element om: (vraag, index) => "index. vraag"
@@ -85,15 +95,34 @@ function buildSystemPrompt(tenant: Tenant): string {
   // De branches waar deze tenant zich op richt, als komma-gescheiden tekst
   const industriesFormatted = tenant.idealIndustries.join(", ");
 
+  // Bouw een sectie met BEKENDE informatie als we pre-filled data hebben
+  // Dit vertelt de AI precies wat ze al weet over de lead
+  let knownInfoSection = "";
+  if (leadInfo && leadInfo.naam) {
+    knownInfoSection = `
+BEKENDE INFORMATIE (vanuit Meta lead formulier — NOOIT opnieuw vragen!):
+- Naam: ${leadInfo.naam}
+- Telefoon: ${leadInfo.telefoon || "onbekend"}
+- Email: ${leadInfo.email || "onbekend"}
+- Bedrijf: ${leadInfo.bedrijf || "onbekend"}
+- Website: ${leadInfo.website || "onbekend"}
+
+BELANGRIJK: Je KENT de lead al bij naam. Spreek de lead aan met "${leadInfo.naam}".
+Vraag NOOIT naar naam, telefoon, email, bedrijfsnaam of website — dat weet je al.
+Stel ALLEEN de extra kwalificatievragen hieronder.
+`;
+  }
+
   // Geef de volledige system prompt terug als template literal (backticks)
   // Template literals laten ons variabelen invoegen met ${variabele}
   return `Je bent ${tenant.agentName}, marketing adviseur bij ${tenant.businessName}.
 
-DOEL: Kwalificeer de lead en plan een afspraak in als ze geschikt zijn.
+DOEL: Kwalificeer de lead via een kort, vriendelijk WhatsApp-gesprek.
+Stel 2-5 extra kwalificatievragen en bepaal of de lead geschikt is voor een kennismakingsgesprek.
 
 STIJL: ${tenant.agentTone}
-
-KWALIFICATIEPROCES:
+${knownInfoSection}
+EXTRA KWALIFICATIEVRAGEN (stel deze ÉÉN voor ÉÉN):
 ${questionsFormatted}
 
 KWALIFICATIECRITERIA:
@@ -104,21 +133,15 @@ KWALIFICATIECRITERIA:
 
 REGELS:
 - Stel NOOIT meer dan 1 vraag per bericht
-- Wacht op antwoord voor je de volgende vraag stelt
-- Als de lead niet past: wees eerlijk en vriendelijk, leg uit waarom
+- Houd berichten KORT: maximaal 2-3 zinnen per bericht
+- Wacht op antwoord voordat je de volgende vraag stelt
+- Wees conversationeel en natuurlijk, geen robotachtige toon
+- Als de lead niet past: wees eerlijk en vriendelijk, leg kort uit waarom
 - Als de lead WEL past: stel voor om een kennismakingsgesprek in te plannen
-- Stuur de boekingslink: ${tenant.bookingUrl}
-- Reageer in het Nederlands
-- Houd berichten kort (max 2-3 zinnen)
+- Stuur dan de boekingslink: ${tenant.bookingUrl}
+- Reageer ALTIJD in het Nederlands
 - Wees nooit opdringerig
-
-LEAD INFORMATIE DIE JE VERZAMELT:
-- Naam
-- Bedrijf / branche
-- Huidige marketing aanpak
-- Gewenst aantal klanten per maand
-- Marketingbudget
-- Of ze eerder ads hebben gedraaid
+- Vraag NOOIT naar informatie die je al hebt (naam, email, telefoon, bedrijf, website)
 
 Na het gesprek geef je een JSON samenvatting:
 {"gekwalificeerd": true/false, "reden": "korte uitleg", "score": 0-100}`;
@@ -130,6 +153,10 @@ Na het gesprek geef je een JSON samenvatting:
  * Onze berichten gebruiken "lead" en "agent" als rollen.
  * Claude verwacht "user" en "assistant".
  * Deze functie doet de vertaling.
+ *
+ * Voorbeeld:
+ * Invoer:  [{ role: "lead", content: "Hallo" }]
+ * Uitvoer: [{ role: "user", content: "Hallo" }]
  *
  * @param messages - Onze interne berichten
  * @returns Berichten in het formaat dat de Anthropic API verwacht
@@ -152,7 +179,7 @@ function formatHistory(messages: Message[]): Array<{ role: "user" | "assistant";
  * Stappen:
  * 1. Sla het bericht van de lead op
  * 2. Bouw de berichtgeschiedenis op voor Claude
- * 3. Stuur alles naar Claude en krijg een antwoord
+ * 3. Stuur alles naar Claude en krijg een antwoord (met pre-filled lead info in de prompt)
  * 4. Check of Claude een kwalificatie-oordeel heeft gegeven
  * 5. Extraheer lead-informatie uit het gesprek
  * 6. Geef het antwoord terug
@@ -189,11 +216,13 @@ export async function handleMessage(
 
     // === STUUR HET GESPREK NAAR CLAUDE ===
     // Dit is waar de magie gebeurt: Claude leest het hele gesprek
-    // en genereert een slim, contextueel antwoord
+    // en genereert een slim, contextueel antwoord.
+    // NIEUW: We geven de pre-filled leadInfo mee aan de system prompt,
+    // zodat Claude weet welke info al bekend is en niet opnieuw gevraagd hoeft te worden.
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514", // Het AI-model dat we gebruiken
       max_tokens: 500, // Maximaal 500 tokens (woorden/woorddelen) per antwoord
-      system: buildSystemPrompt(tenant), // De instructies voor Claude
+      system: buildSystemPrompt(tenant, conv.leadInfo), // Instructies + bekende lead info
       messages: history, // De volledige gespreksgeschiedenis
     });
 
@@ -230,7 +259,7 @@ export async function handleMessage(
 
     // === EXTRAHEER LEAD-INFORMATIE ===
     // Na elk bericht proberen we gestructureerde info te halen uit het gesprek
-    // (naam, bedrijf, budget, etc.)
+    // (branche, marketing, budget, etc. — de kwalificatie-antwoorden)
     await extractLeadInfo(tenant, conversationId);
 
     return agentReply;
@@ -245,8 +274,11 @@ export async function handleMessage(
 /**
  * Start een nieuw gesprek met een begroeting.
  *
- * Dit wordt aangeroepen als iemand voor het EERST contact opneemt.
- * De agent stelt zichzelf voor en vraagt of hij/zij vragen mag stellen.
+ * Dit wordt aangeroepen als iemand voor het EERST contact opneemt
+ * (bijv. via een organisch WhatsApp-bericht, NIET via Meta webhook).
+ *
+ * Voor Meta-leads gebruik je startConversationWithLeadData() — die functie
+ * stuurt een persoonlijke begroeting met de naam van de lead.
  *
  * @param tenantId - De tenant waar dit gesprek bij hoort
  * @param conversationId - Het unieke ID voor het nieuwe gesprek
@@ -285,6 +317,61 @@ export async function startConversation(
 }
 
 /**
+ * Start een nieuw gesprek met PRE-FILLED lead data vanuit Meta.
+ *
+ * Deze functie wordt aangeroepen door de Meta webhook als er een nieuwe lead binnenkomt.
+ * Het verschil met startConversation():
+ * - De lead-informatie (naam, telefoon, email, bedrijf, website) is al BEKEND
+ * - De begroeting is persoonlijker (spreekt de lead bij naam aan)
+ * - Het gesprek begint direct met de eerste kwalificatievraag
+ *
+ * FLOW:
+ * 1. Meta webhook ontvangt lead data
+ * 2. Deze functie maakt een gesprek aan met pre-filled data
+ * 3. De bot stuurt een persoonlijke begroeting + eerste kwalificatievraag
+ * 4. De lead antwoordt en de kwalificatie begint
+ *
+ * @param tenantId - De tenant waar deze lead bij hoort
+ * @param conversationId - Het unieke ID voor het gesprek (telefoonnummer)
+ * @param metaData - De lead data vanuit het Meta formulier
+ * @returns De begroetingstekst (met eerste kwalificatievraag)
+ */
+export async function startConversationWithLeadData(
+  tenantId: string,
+  conversationId: string,
+  metaData: MetaLeadData
+): Promise<string> {
+  // Zoek de tenant op voor de juiste agent-naam, bedrijfsnaam en eerste vraag
+  const tenant = tenantStore.get(tenantId);
+  if (!tenant) {
+    console.error(`[Agent] Tenant niet gevonden: ${tenantId}`);
+    return "Sorry, er is een configuratiefout opgetreden.";
+  }
+
+  // Maak het gesprek aan met de pre-filled data vanuit Meta
+  // Dit slaat meteen naam, telefoon, email, bedrijf en website op
+  store.startConversationWithLeadData(conversationId, tenantId, metaData);
+
+  // Pak de eerste kwalificatievraag van de tenant
+  // Dit is de eerste EXTRA vraag die we stellen (basisinfo weten we al)
+  const eersteVraag = tenant.qualificationQuestions.length > 0
+    ? tenant.qualificationQuestions[0]
+    : "Hoe kunnen we je het beste helpen?";
+
+  // Bouw een persoonlijke begroeting die de lead bij naam aanspreekt
+  // en DIRECT de eerste kwalificatievraag stelt (efficiënt, geen tijdverspilling)
+  const greeting = `Hoi ${metaData.naam}! Bedankt voor je interesse in ${tenant.businessName}. Ik ben ${tenant.agentName}, leuk je te spreken! 😊\n\nIk heb een paar korte vragen om te kijken hoe we je kunnen helpen. ${eersteVraag}`;
+
+  // Sla de begroeting op als eerste bericht in het gesprek
+  store.addMessage(conversationId, "agent", greeting, tenantId);
+
+  // Log de nieuwe Meta-lead
+  console.log(`[Agent] Meta lead gesprek gestart voor ${metaData.naam} (${conversationId}) bij ${tenant.businessName}`);
+
+  return greeting;
+}
+
+/**
  * Extraheer gestructureerde lead-informatie uit een gesprek.
  *
  * Dit is een SLIM trucje: we sturen het hele gesprek naar Claude met de vraag:
@@ -293,6 +380,8 @@ export async function startConversation(
  *
  * We doen dit pas na minimaal 4 berichten (2 uitwisselingen),
  * want eerder is er waarschijnlijk nog niet genoeg info om te extraheren.
+ *
+ * NIEUW: We vragen nu ook om 'website' te extraheren als dat in het gesprek voorkomt.
  *
  * @param tenant - De tenant (nodig voor de API-sleutel)
  * @param conversationId - Het gesprek waaruit we info willen halen
@@ -311,7 +400,7 @@ async function extractLeadInfo(tenant: Tenant, conversationId: string): Promise<
       model: "claude-sonnet-4-20250514",
       max_tokens: 300,
       system:
-        "Extraheer lead informatie uit het gesprek. Geef een JSON object terug met de velden die je kunt vinden: naam, bedrijf, branche, huidgeMarketing, gewenstKlanten (number), budget (number), eerdereAds (boolean), telefoon, email. Geef ALLEEN het JSON object terug, geen tekst.",
+        "Extraheer lead informatie uit het gesprek. Geef een JSON object terug met de velden die je kunt vinden: naam, bedrijf, website, branche, huidgeMarketing, gewenstKlanten (number), budget (number), eerdereAds (boolean), telefoon, email. Geef ALLEEN het JSON object terug, geen tekst.",
       messages: [
         {
           role: "user",
@@ -329,6 +418,7 @@ async function extractLeadInfo(tenant: Tenant, conversationId: string): Promise<
     const jsonMatch = text.match(/\{.*\}/s);
     if (jsonMatch) {
       // Parse het JSON en werk de lead-informatie bij
+      // We mergen dit met bestaande info zodat pre-filled data NIET verloren gaat
       const info: Partial<LeadInfo> = JSON.parse(jsonMatch[0]);
       store.updateLeadInfo(conversationId, info, conv.tenantId);
     }

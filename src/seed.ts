@@ -11,6 +11,10 @@
  * In softwareontwikkeling is "seeding" het vullen van je database
  * (of in ons geval, een JSON-bestand) met standaardgegevens.
  * Zo hoef je niet elke keer handmatig gegevens in te voeren bij het testen.
+ *
+ * NIEUW: De kwalificatievragen zijn aangepast voor de Meta lead form flow.
+ * De bot kent al naam, telefoon, email, bedrijf en website (vanuit Meta).
+ * De vragen hieronder zijn de EXTRA kwalificatievragen die de bot stelt.
  */
 
 import { TenantStore } from "./tenant"; // Importeer de TenantStore klasse
@@ -20,6 +24,13 @@ import { TenantStore } from "./tenant"; // Importeer de TenantStore klasse
  *
  * We maken een TenantStore aan, controleren of Bureau-Assist al bestaat,
  * en maken het aan als dat niet het geval is.
+ *
+ * De standaardvragen zijn specifiek voor Bureau-Assist's kwalificatieproces:
+ * 1. Branche — om te bepalen of de lead in een relevante sector zit
+ * 2. Huidige marketing — om het niveau van de lead te begrijpen
+ * 3. Gewenst aantal klanten — om de ambitie en schaal te peilen
+ * 4. Eerdere advertenties — om ervaring met online marketing te toetsen
+ * 5. Budget — de belangrijkste vraag (minimaal €500/maand voor kwalificatie)
  */
 function seed(): void {
   // Maak een nieuwe TenantStore aan — deze laadt automatisch bestaande tenants
@@ -45,18 +56,23 @@ function seed(): void {
 
     // === AI-AGENT INSTELLINGEN ===
     agentName: "Lisa", // De naam die de chatbot gebruikt
-    agentTone: "Vriendelijk, professioneel, to the point. Geen lange verhalen.",
+    agentTone: "Vriendelijk, professioneel, to the point. Geen lange verhalen. Kort en bondig, max 2-3 zinnen per bericht.",
     // De toon bepaalt HOE de agent praat. Dit wordt meegestuurd als instructie aan Claude.
 
     // === KWALIFICATIEVRAGEN ===
-    // Dit zijn de vragen die de agent stelt om te bepalen of een lead geschikt is.
-    // De volgorde is belangrijk: we beginnen breed en worden specifieker.
+    // Dit zijn de EXTRA vragen die de agent stelt NADAT de basisinfo al bekend is
+    // vanuit het Meta lead formulier (naam, telefoon, email, bedrijf, website).
+    // De agent stelt deze vragen ÉÉN voor ÉÉN in het WhatsApp-gesprek.
+    //
+    // BELANGRIJK: De volgorde is bewust gekozen:
+    // - We beginnen met een makkelijke vraag (branche) om het gesprek te openen
+    // - We bouwen op naar de cruciale vraag (budget) aan het einde
     qualificationQuestions: [
-      "Wat voor bedrijf heeft u?", // Vraag 1: Begrijp wat ze doen
-      "Wat is uw huidige manier om nieuwe klanten te werven?", // Vraag 2: Huidige marketing
-      "Hoeveel nieuwe klanten wilt u per maand binnenhalen?", // Vraag 3: Ambitie/schaal
-      "Heeft u eerder gewerkt met online advertenties?", // Vraag 4: Ervaring
-      "Wat is uw budget voor marketing per maand?", // Vraag 5: Budget (de cruciale vraag)
+      "Welke branche zit je in?", // Vraag 1: Bepaal of de lead in een relevante sector zit
+      "Hoe doe je nu aan marketing om klanten te werven?", // Vraag 2: Begrijp de huidige aanpak
+      "Hoeveel nieuwe klanten wil je per maand?", // Vraag 3: Peil de ambitie en schaal
+      "Heb je eerder advertenties gedraaid op social media?", // Vraag 4: Toets online marketing ervaring
+      "Wat is je maandelijks marketing budget?", // Vraag 5: De cruciale budget-vraag
     ],
 
     // === KWALIFICATIECRITERIA ===
@@ -85,6 +101,8 @@ function seed(): void {
     // Het Twilio Sandbox nummer voor WhatsApp-testen
 
     // === BEVEILIGING ===
+    // Dit webhookSecret wordt ook gebruikt als Meta verify_token
+    // bij het opzetten van de Meta webhook. Kies een sterk, uniek wachtwoord.
     webhookSecret: "", // Optioneel: een geheim wachtwoord om webhook-verzoeken te verifiëren
   });
 
