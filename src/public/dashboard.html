@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bureau-Assist Admin Dashboard</title>
+  <style>
+    /* === CSS RESET & BASIS === */
+    /* Reset alle standaard marges en paddings van de browser */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    /* === DONKER THEMA KLEUREN === */
+    :root {
+      --bg-primary: #0f1117;       /* Achtergrondkleur van de hele pagina */
+      --bg-secondary: #1a1d27;     /* Achtergrond van kaarten en panelen */
+      --bg-tertiary: #252830;      /* Achtergrond van invoervelden en tabellen */
+      --border: #2d3140;           /* Kleur van randen/lijnen */
+      --text-primary: #e4e6eb;     /* Hoofdtekst (bijna wit) */
+      --text-secondary: #8b8fa3;   /* Secundaire tekst (grijs) */
+      --accent: #6366f1;           /* Accentkleur (indigo/paars) */
+      --accent-hover: #818cf8;     /* Hover-kleur van accent */
+      --success: #22c55e;          /* Groen voor succes/gekwalificeerd */
+      --warning: #f59e0b;          /* Oranje voor waarschuwingen */
+      --danger: #ef4444;           /* Rood voor fouten/verwijderen */
+      --info: #3b82f6;             /* Blauw voor informatie */
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh; /* Minimale hoogte = volledige schermhoogte */
+    }
+
+    /* === HEADER (BOVENBALK) === */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between; /* Titel links, knoppen rechts */
+      align-items: center;
+      position: sticky; /* Blijft bovenaan het scherm bij scrollen */
+      top: 0;
+      z-index: 50; /* Zorgt dat header boven andere elementen zweeft */
+    }
+    .header h1 { font-size: 20px; font-weight: 700; }
+    .header-actions { display: flex; gap: 8px; }
+
+    /* === KNOPPEN === */
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s; /* Zachte overgang bij hover */
+    }
+    .btn:hover { background: var(--border); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-danger { background: var(--danger); border-color: var(--danger); color: white; }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* === LAYOUT === */
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+    /* === TENANT SELECTOR (KLANT-KIEZER) === */
+    .tenant-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap; /* Op mobiel: items gaan naar volgende regel */
+    }
+    .tenant-bar label { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+    .tenant-bar select {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      min-width: 200px;
+    }
+
+    /* === STATISTIEKEN KAARTEN === */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Responsief grid */
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .stat-card .value.blue { color: var(--info); }
+    .stat-card .value.green { color: var(--success); }
+    .stat-card .value.orange { color: var(--warning); }
+    .stat-card .value.red { color: var(--danger); }
+    .stat-card .value.purple { color: var(--accent); }
+
+    /* === TABBLADEN (TABS) === */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+    .tab {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* === TABEL === */
+    .table-wrapper {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden; /* Verbergt content die buiten de afgeronde hoeken valt */
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: var(--bg-tertiary);
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(99, 102, 241, 0.05); } /* Subtiele hover-kleur */
+    .clickable { cursor: pointer; }
+
+    /* === STATUS BADGES === */
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge.actief { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+    .badge.gekwalificeerd { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    .badge.niet_gekwalificeerd { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .badge.afspraak_gepland { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+
+    /* === SCORE BALK === */
+    .score-bar {
+      width: 60px; height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      overflow: hidden;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    .score-fill { height: 100%; border-radius: 3px; }
+    .score-fill.low { background: var(--danger); }
+    .score-fill.mid { background: var(--warning); }
+    .score-fill.high { background: var(--success); }
+
+    /* === LEGE TOESTAND === */
+    .empty { text-align: center; padding: 40px; color: var(--text-secondary); }
+
+    /* === MODAL (POP-UP VENSTER) === */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(4px); /* Wazig effect achter de modal */
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 700px;
+      max-height: 85vh;
+      overflow-y: auto; /* Scroll als de inhoud te lang is */
+      padding: 24px;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-header h3 { font-size: 18px; }
+    .close {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .close:hover { color: var(--text-primary); background: var(--border); }
+
+    /* === CHAT BERICHTEN === */
+    .messages { max-height: 400px; overflow-y: auto; padding: 8px 0; }
+    .msg {
+      margin-bottom: 12px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      max-width: 80%;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .msg.lead {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--info);
+      margin-left: auto; /* Duw naar rechts */
+    }
+    .msg.agent {
+      background: var(--bg-tertiary);
+    }
+    .msg .meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* === FORMULIER STIJLEN === */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* Twee kolommen naast elkaar */
+      gap: 16px;
+    }
+    .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+    /* === TENANT KAARTEN === */
+    .tenant-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .tenant-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.15s;
+    }
+    .tenant-card:hover { border-color: var(--accent); }
+    .tenant-card h4 { font-size: 16px; margin-bottom: 8px; }
+    .tenant-card .meta-info {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .tenant-card .meta-info span { display: block; margin-bottom: 4px; }
+    .tenant-card .actions { display: flex; gap: 8px; }
+
+    /* === RESPONSIEF ONTWERP (MOBIEL) === */
+    @media (max-width: 768px) {
+      .container { padding: 16px; }
+      .form-row { grid-template-columns: 1fr; } /* Op mobiel: één kolom */
+      .header { padding: 12px 16px; }
+      .header h1 { font-size: 16px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .tenant-grid { grid-template-columns: 1fr; }
+      .modal { width: 95%; padding: 16px; }
+      table { font-size: 13px; }
+      th, td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- === HEADER === -->
+  <div class="header">
+    <h1>Bureau-Assist Admin</h1>
+    <div class="header-actions">
+      <button class="btn" onclick="loadData()">Vernieuwen</button>
+      <button class="btn btn-primary" onclick="showTenantForm()">+ Nieuwe Klant</button>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- === TENANT SELECTOR === -->
+    <div class="tenant-bar">
+      <label for="tenantSelect">Klant:</label>
+      <select id="tenantSelect" onchange="onTenantChange()">
+        <option value="">-- Kies een klant --</option>
+      </select>
+    </div>
+
+    <!-- === TABBLADEN === -->
+    <div class="tabs">
+      <button class="tab active" data-tab="overview" onclick="switchTab('overview', this)">Overzicht</button>
+      <button class="tab" data-tab="conversations" onclick="switchTab('conversations', this)">Gesprekken</button>
+      <button class="tab" data-tab="tenants" onclick="switchTab('tenants', this)">Klanten Beheer</button>
+    </div>
+
+    <!-- ================== -->
+    <!-- TAB: OVERZICHT     -->
+    <!-- ================== -->
+    <div id="tab-overview" class="tab-content">
+      <!-- Statistieken kaarten -->
+      <div class="stats">
+        <div class="stat-card">
+          <div class="label">Totaal Leads</div>
+          <div class="value blue" id="statTotal">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Actief</div>
+          <div class="value orange" id="statActive">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Gekwalificeerd</div>
+          <div class="value green" id="statQualified">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Niet Gekwalificeerd</div>
+          <div class="value red" id="statNotQualified">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Afspraken</div>
+          <div class="value green" id="statBooked">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Gem. Score</div>
+          <div class="value purple" id="statAvgScore">0</div>
+        </div>
+      </div>
+
+      <!-- Recente gesprekken tabel -->
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Lead</th>
+              <th>Bedrijf</th>
+              <th>Branche</th>
+              <th>Budget</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Laatst bijgewerkt</th>
+            </tr>
+          </thead>
+          <tbody id="convTable">
+            <tr><td colspan="7" class="empty">Kies een klant om gesprekken te bekijken.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ================== -->
+    <!-- TAB: GESPREKKEN    -->
+    <!-- ================== -->
+    <div id="tab-conversations" class="tab-content" style="display:none;">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Lead</th>
+              <th>Bedrijf</th>
+              <th>Branche</th>
+              <th>Budget</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th>Berichten</th>
+              <th>Laatst bijgewerkt</th>
+            </tr>
+          </thead>
+          <tbody id="convTableFull">
+            <tr><td colspan="8" class="empty">Kies een klant om gesprekken te bekijken.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ======================== -->
+    <!-- TAB: KLANTEN BEHEER      -->
+    <!-- ======================== -->
+    <div id="tab-tenants" class="tab-content" style="display:none;">
+      <div class="tenant-grid" id="tenantGrid">
+        <div class="empty">Laden...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== -->
+  <!-- MODAL: GESPREK DETAIL    -->
+  <!-- ======================== -->
+  <div class="modal-overlay" id="convModal" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="convModalTitle">Gesprek</h3>
+        <button class="close" onclick="document.getElementById('convModal').classList.remove('show')">&times;</button>
+      </div>
+      <div class="messages" id="convModalMessages"></div>
+    </div>
+  </div>
+
+  <!-- ======================== -->
+  <!-- MODAL: TENANT FORMULIER  -->
+  <!-- ======================== -->
+  <div class="modal-overlay" id="tenantModal" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="tenantModalTitle">Nieuwe Klant Toevoegen</h3>
+        <button class="close" onclick="document.getElementById('tenantModal').classList.remove('show')">&times;</button>
+      </div>
+      <form id="tenantForm" onsubmit="saveTenant(event)">
+        <!-- Verborgen veld om te onthouden of we bewerken of aanmaken -->
+        <input type="hidden" id="tf_editMode" value="create">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tf_id">Klant-ID (uniek, geen spaties)</label>
+            <input type="text" id="tf_id" required placeholder="bijv. mijn-bedrijf">
+          </div>
+          <div class="form-group">
+            <label for="tf_businessName">Bedrijfsnaam</label>
+            <input type="text" id="tf_businessName" required placeholder="bijv. Bureau-Assist">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tf_agentName">Agent Naam</label>
+            <input type="text" id="tf_agentName" required placeholder="bijv. Lisa">
+          </div>
+          <div class="form-group">
+            <label for="tf_agentTone">Agent Toon/Stijl</label>
+            <input type="text" id="tf_agentTone" placeholder="Vriendelijk en professioneel">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tf_qualificationQuestions">Kwalificatievragen (één per regel)</label>
+          <textarea id="tf_qualificationQuestions" placeholder="Wat voor bedrijf heeft u?&#10;Wat is uw budget?"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tf_minBudget">Minimaal Budget (euro)</label>
+            <input type="number" id="tf_minBudget" value="500" min="0">
+          </div>
+          <div class="form-group">
+            <label for="tf_idealIndustries">Ideale Branches (komma-gescheiden)</label>
+            <input type="text" id="tf_idealIndustries" placeholder="coaching, consultancy, fitness">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="tf_bookingUrl">Boekings-URL</label>
+          <input type="url" id="tf_bookingUrl" placeholder="https://...">
+        </div>
+
+        <div class="form-group">
+          <label for="tf_anthropicApiKey">Anthropic API Sleutel</label>
+          <input type="password" id="tf_anthropicApiKey" placeholder="sk-ant-...">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tf_twilioAccountSid">Twilio Account SID</label>
+            <input type="text" id="tf_twilioAccountSid" placeholder="AC...">
+          </div>
+          <div class="form-group">
+            <label for="tf_twilioAuthToken">Twilio Auth Token</label>
+            <input type="password" id="tf_twilioAuthToken" placeholder="">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tf_twilioPhoneNumber">Twilio WhatsApp Nummer</label>
+            <input type="text" id="tf_twilioPhoneNumber" placeholder="whatsapp:+31612345678">
+          </div>
+          <div class="form-group">
+            <label for="tf_webhookSecret">Webhook Geheim (optioneel)</label>
+            <input type="text" id="tf_webhookSecret" placeholder="">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn" onclick="document.getElementById('tenantModal').classList.remove('show')">Annuleren</button>
+          <button type="submit" class="btn btn-primary" id="tenantSubmitBtn">Opslaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================== -->
+  <!-- JAVASCRIPT               -->
+  <!-- ======================== -->
+  <script>
+    /**
+     * === APPLICATIE STATE ===
+     * Deze variabelen houden de huidige toestand van het dashboard bij.
+     */
+    let allTenants = [];         // Lijst van alle tenants (klanten)
+    let currentTenantId = '';    // De ID van de momenteel geselecteerde tenant
+    let currentConversations = []; // Gesprekken van de geselecteerde tenant
+
+    /**
+     * Laad alle data op bij het starten van de pagina.
+     * Dit is de "hoofdfunctie" die alles initialiseert.
+     */
+    async function loadData() {
+      await loadTenants();   // Laad de lijst van tenants
+      if (currentTenantId) {
+        await loadTenantData(); // Laad gesprekken en stats van geselecteerde tenant
+      }
+    }
+
+    /**
+     * Laad alle tenants van de API en vul de dropdown.
+     *
+     * fetch() is de moderne manier om HTTP-verzoeken te sturen vanuit de browser.
+     * Het geeft een Promise terug — daarom gebruiken we 'await'.
+     */
+    async function loadTenants() {
+      try {
+        const res = await fetch('/api/tenants');           // Stuur GET-verzoek
+        allTenants = await res.json();                      // Parse het JSON-antwoord
+
+        // Vul de tenant-dropdown
+        const select = document.getElementById('tenantSelect');
+        const currentVal = select.value; // Onthoud de huidige selectie
+        select.innerHTML = '<option value="">-- Kies een klant --</option>';
+
+        // Voeg elke tenant toe als een <option> in de dropdown
+        allTenants.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.businessName;
+          select.appendChild(opt);
+        });
+
+        // Herstel de selectie (als die nog bestaat)
+        if (currentVal && allTenants.find(t => t.id === currentVal)) {
+          select.value = currentVal;
+        }
+
+        // Render de tenant-kaarten in het Klanten Beheer-tabblad
+        renderTenantGrid();
+      } catch (e) {
+        console.error('Fout bij laden van tenants:', e);
+      }
+    }
+
+    /**
+     * Wordt aangeroepen als de gebruiker een andere tenant selecteert.
+     * Laadt de gesprekken en statistieken van de nieuwe tenant.
+     */
+    async function onTenantChange() {
+      currentTenantId = document.getElementById('tenantSelect').value;
+      if (currentTenantId) {
+        await loadTenantData();
+      } else {
+        // Geen tenant geselecteerd — toon lege tabellen
+        clearStats();
+        clearTables();
+      }
+    }
+
+    /**
+     * Laad de gesprekken en statistieken van de geselecteerde tenant.
+     * We doen twee API-aanroepen tegelijk met Promise.all()
+     * — dit is sneller dan ze na elkaar te doen.
+     */
+    async function loadTenantData() {
+      if (!currentTenantId) return;
+      try {
+        // Promise.all() voert beide fetch-verzoeken TEGELIJK uit
+        const [convRes, statsRes] = await Promise.all([
+          fetch(`/api/tenants/${currentTenantId}/conversations`),
+          fetch(`/api/tenants/${currentTenantId}/stats`)
+        ]);
+
+        currentConversations = await convRes.json();
+        const stats = await statsRes.json();
+
+        // Werk de statistieken bij op het scherm
+        updateStats(stats);
+        // Render de gespreksoverzichten in de tabellen
+        renderConvTables();
+      } catch (e) {
+        console.error('Fout bij laden van tenant data:', e);
+      }
+    }
+
+    /**
+     * Werk de statistieken-kaarten bij met nieuwe data.
+     * getElementById() vindt een HTML-element op basis van zijn ID.
+     * textContent zet de tekst in dat element.
+     */
+    function updateStats(stats) {
+      document.getElementById('statTotal').textContent = stats.totaal || 0;
+      document.getElementById('statActive').textContent = stats.actief || 0;
+      document.getElementById('statQualified').textContent = stats.gekwalificeerd || 0;
+      document.getElementById('statNotQualified').textContent = stats.niet_gekwalificeerd || 0;
+      document.getElementById('statBooked').textContent = stats.afspraak_gepland || 0;
+      document.getElementById('statAvgScore').textContent = stats.gemiddeldeScore || 0;
+    }
+
+    /**
+     * Zet alle statistieken terug naar 0.
+     */
+    function clearStats() {
+      ['statTotal','statActive','statQualified','statNotQualified','statBooked','statAvgScore']
+        .forEach(id => document.getElementById(id).textContent = '0');
+    }
+
+    /**
+     * Maak alle tabellen leeg.
+     */
+    function clearTables() {
+      document.getElementById('convTable').innerHTML =
+        '<tr><td colspan="7" class="empty">Kies een klant om gesprekken te bekijken.</td></tr>';
+      document.getElementById('convTableFull').innerHTML =
+        '<tr><td colspan="8" class="empty">Kies een klant om gesprekken te bekijken.</td></tr>';
+    }
+
+    /**
+     * Render de gesprekstabellen met data.
+     *
+     * .map() loopt door elk gesprek en maakt er een HTML-rij van.
+     * Template literals (backticks) laten ons HTML schrijven met variabelen erin.
+     */
+    function renderConvTables() {
+      if (currentConversations.length === 0) {
+        document.getElementById('convTable').innerHTML =
+          '<tr><td colspan="7" class="empty">Nog geen gesprekken voor deze klant.</td></tr>';
+        document.getElementById('convTableFull').innerHTML =
+          '<tr><td colspan="8" class="empty">Nog geen gesprekken voor deze klant.</td></tr>';
+        return;
+      }
+
+      // Maak een rij voor de overzichtstabel
+      const makeRow = (c, extra) => {
+        const scoreClass = c.score >= 70 ? 'high' : c.score >= 40 ? 'mid' : 'low';
+        const updated = new Date(c.updatedAt).toLocaleString('nl-NL');
+        const name = escapeHtml(c.leadInfo.naam || c.id);
+        const company = escapeHtml(c.leadInfo.bedrijf || '-');
+        const industry = escapeHtml(c.leadInfo.branche || '-');
+        const budget = c.leadInfo.budget ? '&euro;' + c.leadInfo.budget : '-';
+        return `<tr class="clickable" onclick='showConversation("${c.id}")'>
+          <td>${name}</td>
+          <td>${company}</td>
+          <td>${industry}</td>
+          <td>${budget}</td>
+          <td><div class="score-bar"><div class="score-fill ${scoreClass}" style="width:${c.score}%"></div></div>${c.score}</td>
+          <td><span class="badge ${c.status}">${c.status.replace('_', ' ')}</span></td>
+          ${extra || ''}
+          <td>${updated}</td>
+        </tr>`;
+      };
+
+      // Vul de overzichtstabel (zonder berichten-kolom)
+      document.getElementById('convTable').innerHTML =
+        currentConversations.map(c => makeRow(c)).join('');
+
+      // Vul de gedetailleerde tabel (met berichten-kolom)
+      document.getElementById('convTableFull').innerHTML =
+        currentConversations.map(c => makeRow(c, `<td>${c.messages.length}</td>`)).join('');
+    }
+
+    /**
+     * Toon het gespreksdetail in een modal (pop-up venster).
+     *
+     * Zoekt het gesprek op in de huidige lijst en toont alle berichten
+     * met tijdstempels en kleurcodes.
+     */
+    function showConversation(convId) {
+      const conv = currentConversations.find(c => c.id === convId);
+      if (!conv) return;
+
+      // Zoek de agent-naam van de huidige tenant
+      const tenant = allTenants.find(t => t.id === currentTenantId);
+      const agentName = tenant ? tenant.agentName : 'Agent';
+
+      // Stel de titel in
+      document.getElementById('convModalTitle').textContent =
+        conv.leadInfo.naam || conv.id;
+
+      // Render alle berichten met de juiste styling
+      document.getElementById('convModalMessages').innerHTML =
+        conv.messages.map(m => {
+          const time = new Date(m.timestamp).toLocaleTimeString('nl-NL');
+          const sender = m.role === 'lead' ? 'Lead' : agentName;
+          return `<div class="msg ${m.role}">
+            ${escapeHtml(m.content)}
+            <div class="meta">${sender} - ${time}</div>
+          </div>`;
+        }).join('');
+
+      // Toon de modal
+      document.getElementById('convModal').classList.add('show');
+    }
+
+    /**
+     * Render het grid van tenant-kaarten in het Klanten Beheer-tabblad.
+     * Elke tenant krijgt een kaart met basisinfo en bewerk/verwijder-knoppen.
+     */
+    function renderTenantGrid() {
+      const grid = document.getElementById('tenantGrid');
+
+      if (allTenants.length === 0) {
+        grid.innerHTML = '<div class="empty">Nog geen klanten. Klik op "+ Nieuwe Klant" om er een toe te voegen.</div>';
+        return;
+      }
+
+      grid.innerHTML = allTenants.map(t => `
+        <div class="tenant-card">
+          <h4>${escapeHtml(t.businessName)}</h4>
+          <div class="meta-info">
+            <span>ID: ${escapeHtml(t.id)}</span>
+            <span>Agent: ${escapeHtml(t.agentName)}</span>
+            <span>Budget: &euro;${t.minBudget}+</span>
+            <span>Vragen: ${t.qualificationQuestions.length}</span>
+            <span>API: ${t.anthropicApiKey ? '&#10003; Geconfigureerd' : '&#10007; Niet ingesteld'}</span>
+            <span>Twilio: ${t.twilioAccountSid ? '&#10003; Geconfigureerd' : '&#10007; Niet ingesteld'}</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm" onclick='editTenant("${t.id}")'>Bewerken</button>
+            <button class="btn btn-sm btn-danger" onclick='deleteTenant("${t.id}", "${escapeHtml(t.businessName)}")'>Verwijderen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /**
+     * Toon het formulier om een NIEUWE tenant aan te maken.
+     * We openen de modal en resetten alle invoervelden.
+     */
+    function showTenantForm() {
+      document.getElementById('tenantModalTitle').textContent = 'Nieuwe Klant Toevoegen';
+      document.getElementById('tenantSubmitBtn').textContent = 'Aanmaken';
+      document.getElementById('tf_editMode').value = 'create';
+      document.getElementById('tf_id').disabled = false; // ID-veld bewerkbaar
+      document.getElementById('tenantForm').reset();     // Reset alle velden
+      document.getElementById('tenantModal').classList.add('show');
+    }
+
+    /**
+     * Vul het formulier met de gegevens van een bestaande tenant
+     * en open het in bewerkingsmodus.
+     */
+    function editTenant(id) {
+      const t = allTenants.find(x => x.id === id);
+      if (!t) return;
+
+      document.getElementById('tenantModalTitle').textContent = 'Klant Bewerken';
+      document.getElementById('tenantSubmitBtn').textContent = 'Bijwerken';
+      document.getElementById('tf_editMode').value = 'edit';
+
+      // Vul alle formuliervelden in met de bestaande waarden
+      document.getElementById('tf_id').value = t.id;
+      document.getElementById('tf_id').disabled = true; // ID mag niet gewijzigd worden
+      document.getElementById('tf_businessName').value = t.businessName;
+      document.getElementById('tf_agentName').value = t.agentName;
+      document.getElementById('tf_agentTone').value = t.agentTone || '';
+      document.getElementById('tf_qualificationQuestions').value =
+        (t.qualificationQuestions || []).join('\n'); // Array → tekst met nieuwe regels
+      document.getElementById('tf_minBudget').value = t.minBudget || 500;
+      document.getElementById('tf_idealIndustries').value =
+        (t.idealIndustries || []).join(', '); // Array → komma-gescheiden tekst
+      document.getElementById('tf_bookingUrl').value = t.bookingUrl || '';
+      document.getElementById('tf_anthropicApiKey').value = t.anthropicApiKey || '';
+      document.getElementById('tf_twilioAccountSid').value = t.twilioAccountSid || '';
+      document.getElementById('tf_twilioAuthToken').value = t.twilioAuthToken || '';
+      document.getElementById('tf_twilioPhoneNumber').value = t.twilioPhoneNumber || '';
+      document.getElementById('tf_webhookSecret').value = t.webhookSecret || '';
+
+      document.getElementById('tenantModal').classList.add('show');
+    }
+
+    /**
+     * Sla de tenant op (aanmaken of bijwerken).
+     *
+     * event.preventDefault() voorkomt dat het formulier de pagina herlaadt
+     * (het standaardgedrag van een HTML-formulier).
+     *
+     * We lezen alle formuliervelden uit en sturen ze naar de API.
+     */
+    async function saveTenant(event) {
+      event.preventDefault(); // Voorkom standaard formulier-submit (pagina herladen)
+
+      const isEdit = document.getElementById('tf_editMode').value === 'edit';
+      const id = document.getElementById('tf_id').value.trim();
+
+      // Bouw het data-object op uit alle formuliervelden
+      const data = {
+        id: id,
+        businessName: document.getElementById('tf_businessName').value.trim(),
+        agentName: document.getElementById('tf_agentName').value.trim(),
+        agentTone: document.getElementById('tf_agentTone').value.trim(),
+        // Split de vragen op nieuwe regels en filter lege regels weg
+        qualificationQuestions: document.getElementById('tf_qualificationQuestions').value
+          .split('\n').map(q => q.trim()).filter(q => q),
+        minBudget: parseInt(document.getElementById('tf_minBudget').value) || 500,
+        // Split de branches op komma's en filter lege waarden weg
+        idealIndustries: document.getElementById('tf_idealIndustries').value
+          .split(',').map(i => i.trim()).filter(i => i),
+        bookingUrl: document.getElementById('tf_bookingUrl').value.trim(),
+        anthropicApiKey: document.getElementById('tf_anthropicApiKey').value.trim(),
+        twilioAccountSid: document.getElementById('tf_twilioAccountSid').value.trim(),
+        twilioAuthToken: document.getElementById('tf_twilioAuthToken').value.trim(),
+        twilioPhoneNumber: document.getElementById('tf_twilioPhoneNumber').value.trim(),
+        webhookSecret: document.getElementById('tf_webhookSecret').value.trim(),
+      };
+
+      try {
+        let res;
+        if (isEdit) {
+          // PUT-verzoek om een bestaande tenant bij te werken
+          res = await fetch(`/api/tenants/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+        } else {
+          // POST-verzoek om een nieuwe tenant aan te maken
+          res = await fetch('/api/tenants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+        }
+
+        if (res.ok) {
+          // Succesvol! Sluit de modal en herlaad de data
+          document.getElementById('tenantModal').classList.remove('show');
+          await loadData();
+        } else {
+          // Er ging iets mis — toon de foutmelding
+          const err = await res.json();
+          alert('Fout: ' + (err.error || 'Onbekende fout'));
+        }
+      } catch (e) {
+        alert('Netwerkfout: ' + e.message);
+      }
+    }
+
+    /**
+     * Verwijder een tenant na bevestiging.
+     * confirm() toont een pop-up aan de gebruiker met "OK" en "Annuleren".
+     */
+    async function deleteTenant(id, name) {
+      if (!confirm(`Weet je zeker dat je "${name}" wilt verwijderen? Dit kan niet ongedaan gemaakt worden.`)) {
+        return; // Gebruiker klikte op "Annuleren"
+      }
+
+      try {
+        const res = await fetch(`/api/tenants/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          // Als de verwijderde tenant de geselecteerde tenant was, reset de selectie
+          if (currentTenantId === id) {
+            currentTenantId = '';
+            document.getElementById('tenantSelect').value = '';
+            clearStats();
+            clearTables();
+          }
+          await loadData(); // Herlaad alles
+        } else {
+          alert('Fout bij verwijderen');
+        }
+      } catch (e) {
+        alert('Netwerkfout: ' + e.message);
+      }
+    }
+
+    /**
+     * Wissel tussen tabbladen (Overzicht, Gesprekken, Klanten Beheer).
+     *
+     * We verbergen alle tab-content divs en tonen alleen het geselecteerde tabblad.
+     */
+    function switchTab(tab, btn) {
+      // Verberg alle tab-inhoud
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      // Verwijder de 'active' klasse van alle tabs
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      // Toon het geselecteerde tabblad en markeer de knop als actief
+      document.getElementById('tab-' + tab).style.display = 'block';
+      btn.classList.add('active');
+    }
+
+    /**
+     * Beveiligingsfunctie: voorkom XSS (Cross-Site Scripting) aanvallen.
+     *
+     * XSS is een aanval waarbij iemand schadelijke HTML of JavaScript invoert
+     * in een formulier, waarna die code uitgevoerd wordt in de browser.
+     *
+     * Deze functie vervangt gevaarlijke tekens door hun HTML-codes,
+     * zodat ze als TEKST getoond worden in plaats van als HTML uitgevoerd.
+     */
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text; // textContent escaped automatisch HTML
+      return div.innerHTML;    // innerHTML geeft de veilige versie terug
+    }
+
+    // === INITIALISATIE ===
+    // Laad alle data als de pagina geladen is
+    loadData();
+    // Ververs automatisch elke 15 seconden
+    setInterval(() => {
+      if (currentTenantId) loadTenantData();
+    }, 15000);
+  </script>
+</body>
+</html>
