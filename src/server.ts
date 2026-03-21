@@ -76,6 +76,19 @@ app.use(express.urlencoded({ extended: true }));
  * Bijv. als je naar http://localhost:3000/ gaat, krijg je dashboard.html.
  */
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "..", "src", "public")));
+
+// Fallback: serveer dashboard.html op /
+app.get("/", (_req, res) => {
+  const options = [
+    path.join(__dirname, "public", "dashboard.html"),
+    path.join(__dirname, "..", "src", "public", "dashboard.html"),
+  ];
+  for (const p of options) {
+    try { if (require("fs").existsSync(p)) { res.sendFile(p); return; } } catch {}
+  }
+  res.status(404).send("Dashboard niet gevonden");
+});
 
 // === WEBHOOKS ===
 
