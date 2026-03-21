@@ -4,1636 +4,1394 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Appointwise — Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ====== RESET & VARIABLES ====== */
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-    :root {
-      --primary: #7C3AED;
-      --primary-light: #8B5CF6;
-      --primary-dark: #6D28D9;
-      --primary-glow: rgba(124, 58, 237, 0.35);
-      --accent: #06B6D4;
-      --accent-light: #22D3EE;
-      --accent-glow: rgba(6, 182, 212, 0.25);
-      --bg: #0F0F1A;
-      --bg-card: rgba(255, 255, 255, 0.04);
-      --bg-card-hover: rgba(255, 255, 255, 0.07);
-      --bg-sidebar: rgba(15, 15, 30, 0.85);
-      --border: rgba(255, 255, 255, 0.07);
-      --border-active: rgba(124, 58, 237, 0.4);
-      --text: #F1F1F6;
-      --text-dim: #8B8FA3;
-      --text-muted: #555770;
-      --success: #22C55E;
-      --warning: #F59E0B;
-      --danger: #EF4444;
-      --sidebar-w: 260px;
-      --topbar-h: 68px;
-      --radius: 16px;
-      --radius-sm: 10px;
-      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0C0C14;
+      --bg2:#12121C;
+      --bg3:#1A1A28;
+      --bg4:#222234;
+      --border:rgba(249,115,22,.12);
+      --border2:rgba(249,115,22,.22);
+      --text:#E8E6E3;
+      --text2:#9B97A0;
+      --text3:#6B6772;
+      --orange:#F97316;
+      --orange2:#FB923C;
+      --amber:#F59E0B;
+      --green:#22C55E;
+      --red:#EF4444;
+      --blue:#3B82F6;
+      --card-bg:rgba(26,26,40,.65);
+      --card-border:rgba(249,115,22,.1);
+      --sidebar-w:260px;
+      --radius:16px;
+    }
+    html{height:100%}
+    body{
+      font-family:'Inter',system-ui,-apple-system,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+      background:radial-gradient(ellipse 80% 60% at 10% 20%,rgba(249,115,22,.06),transparent),
+                 radial-gradient(ellipse 60% 50% at 80% 80%,rgba(245,158,11,.04),transparent);
+      pointer-events:none;z-index:0;
     }
 
-    /* ====== BASE ====== */
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:rgba(249,115,22,.25);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(249,115,22,.4)}
+
+    /* ===== SIDEBAR ===== */
+    .sidebar{
+      position:fixed;left:0;top:0;bottom:0;
+      width:var(--sidebar-w);
+      background:rgba(12,12,20,.92);
+      backdrop-filter:blur(24px);
+      border-right:1px solid var(--border);
+      display:flex;flex-direction:column;
+      z-index:100;
+      transition:transform .3s cubic-bezier(.4,0,.2,1);
     }
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background:
-        radial-gradient(ellipse 80% 60% at 10% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 90% 80%, rgba(6,182,212,0.08) 0%, transparent 60%);
-      pointer-events: none; z-index: 0;
+    .sidebar-header{
+      padding:28px 24px 20px;
+      border-bottom:1px solid var(--border);
+    }
+    .logo{
+      display:flex;align-items:center;gap:10px;
+      text-decoration:none;color:var(--text);
+    }
+    .logo-icon{
+      width:36px;height:36px;
+      background:linear-gradient(135deg,var(--orange),var(--amber));
+      border-radius:10px;display:flex;align-items:center;justify-content:center;
+      font-size:18px;
+    }
+    .logo-text{
+      font-size:18px;font-weight:800;letter-spacing:-.5px;
+    }
+    .logo-text span{color:var(--orange)}
+    .sidebar-nav{
+      flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px;
+    }
+    .nav-item{
+      display:flex;align-items:center;gap:12px;
+      padding:11px 14px;border-radius:12px;
+      cursor:pointer;font-size:14px;font-weight:500;
+      color:var(--text2);transition:all .2s;
+      border:1px solid transparent;
+      position:relative;
+    }
+    .nav-item:hover{
+      background:rgba(249,115,22,.06);color:var(--text);
+    }
+    .nav-item.active{
+      background:rgba(249,115,22,.1);
+      color:var(--orange);
+      border-color:rgba(249,115,22,.18);
+    }
+    .nav-item.active::before{
+      content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+      width:3px;height:20px;background:var(--orange);border-radius:0 3px 3px 0;
+    }
+    .nav-icon{width:20px;text-align:center;font-size:16px;flex-shrink:0}
+    .sidebar-footer{
+      padding:16px 24px;border-top:1px solid var(--border);
+      font-size:11px;color:var(--text3);text-align:center;
+      letter-spacing:.3px;
+    }
+    .sidebar-footer a{color:var(--orange);text-decoration:none;font-weight:600}
+
+    /* ===== MOBILE TOGGLE ===== */
+    .mobile-toggle{
+      display:none;position:fixed;top:16px;left:16px;z-index:200;
+      width:42px;height:42px;border-radius:12px;
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text);font-size:20px;cursor:pointer;
+      align-items:center;justify-content:center;
+    }
+    .mobile-overlay{
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,.6);z-index:90;
     }
 
-    /* ====== SCROLLBAR ====== */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+    /* ===== MAIN CONTENT ===== */
+    .main{
+      flex:1;margin-left:var(--sidebar-w);position:relative;z-index:1;
+      min-height:100vh;
+    }
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      padding:16px 32px;
+      background:rgba(12,12,20,.8);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .topbar-left{display:flex;align-items:center;gap:16px}
+    .topbar h2{font-size:20px;font-weight:700;letter-spacing:-.3px}
+    .topbar-right{display:flex;align-items:center;gap:12px}
 
-    /* ====== SIDEBAR ====== */
-    .sidebar {
-      position: fixed; left: 0; top: 0; bottom: 0;
-      width: var(--sidebar-w);
-      background: var(--bg-sidebar);
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      z-index: 100;
-      transition: transform var(--transition);
+    /* Tenant selector */
+    .tenant-select{
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text);padding:8px 14px;border-radius:10px;
+      font-size:13px;font-family:inherit;cursor:pointer;
+      min-width:180px;
     }
-    .sidebar-brand {
-      padding: 28px 24px 24px;
-      display: flex; align-items: center; gap: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .sidebar-brand .logo-icon {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; color: #fff;
-      box-shadow: 0 4px 20px var(--primary-glow);
-    }
-    .sidebar-brand h1 {
-      font-size: 18px; font-weight: 700;
-      background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
-    .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px; border-radius: var(--radius-sm);
-      color: var(--text-dim); font-size: 14px; font-weight: 500;
-      cursor: pointer; transition: all var(--transition);
-      position: relative; user-select: none;
-    }
-    .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.04); }
-    .nav-item.active {
-      color: #fff;
-      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(124,58,237,0.08));
-      box-shadow: inset 0 0 0 1px rgba(124,58,237,0.3);
-    }
-    .nav-item.active::before {
-      content: '';
-      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-      width: 3px; height: 20px; border-radius: 0 3px 3px 0;
-      background: var(--primary);
-    }
-    .nav-item .icon { font-size: 18px; width: 24px; text-align: center; }
-    .nav-badge {
-      margin-left: auto;
-      background: var(--primary);
-      color: #fff; font-size: 11px; font-weight: 600;
-      padding: 2px 8px; border-radius: 10px;
-    }
-    .sidebar-footer {
-      padding: 20px 24px;
-      border-top: 1px solid var(--border);
-      font-size: 12px; color: var(--text-muted); text-align: center;
-    }
-    .sidebar-footer span { color: var(--accent); font-weight: 500; }
+    .tenant-select:focus{outline:none;border-color:var(--orange)}
 
-    /* ====== MOBILE SIDEBAR ====== */
-    .sidebar-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.6); z-index: 99;
+    .content{padding:28px 32px;max-width:1400px}
+
+    /* ===== BUTTONS ===== */
+    .btn{
+      padding:9px 18px;border-radius:10px;border:1px solid var(--border);
+      background:var(--bg3);color:var(--text);font-size:13px;font-weight:600;
+      cursor:pointer;transition:all .2s;font-family:inherit;
+      display:inline-flex;align-items:center;gap:6px;
     }
-    .menu-toggle {
-      display: none;
-      background: none; border: none; color: var(--text);
-      font-size: 24px; cursor: pointer; padding: 8px;
+    .btn:hover{background:var(--bg4);border-color:var(--border2)}
+    .btn-primary{
+      background:linear-gradient(135deg,var(--orange),#EA580C);
+      border-color:transparent;color:#fff;
+    }
+    .btn-primary:hover{
+      background:linear-gradient(135deg,var(--orange2),var(--orange));
+      transform:translateY(-1px);box-shadow:0 4px 16px rgba(249,115,22,.3);
+    }
+    .btn-danger{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.2);color:var(--red)}
+    .btn-danger:hover{background:rgba(239,68,68,.25)}
+    .btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+    .btn-ghost{background:transparent;border-color:transparent}
+    .btn-ghost:hover{background:var(--bg3)}
+
+    /* ===== PAGE SECTIONS ===== */
+    .page{display:none}
+    .page.active{display:block;animation:fadeUp .35s ease}
+    @keyframes fadeUp{
+      from{opacity:0;transform:translateY(12px)}
+      to{opacity:1;transform:translateY(0)}
     }
 
-    /* ====== MAIN CONTENT ====== */
-    .main { margin-left: var(--sidebar-w); min-height: 100vh; position: relative; z-index: 1; }
+    /* ===== STAT CARDS ===== */
+    .stats-grid{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;
+    }
+    .stat-card{
+      background:var(--card-bg);
+      backdrop-filter:blur(12px);
+      border:1px solid var(--card-border);
+      border-radius:var(--radius);padding:22px;
+      transition:all .3s;position:relative;overflow:hidden;
+    }
+    .stat-card::after{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,transparent,var(--orange),transparent);
+      opacity:0;transition:opacity .3s;
+    }
+    .stat-card:hover{
+      border-color:var(--border2);transform:translateY(-2px);
+      box-shadow:0 8px 32px rgba(249,115,22,.08);
+    }
+    .stat-card:hover::after{opacity:1}
+    .stat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .stat-icon{
+      width:40px;height:40px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;font-size:18px;
+    }
+    .stat-icon.orange{background:rgba(249,115,22,.12);color:var(--orange)}
+    .stat-icon.green{background:rgba(34,197,94,.12);color:var(--green)}
+    .stat-icon.amber{background:rgba(245,158,11,.12);color:var(--amber)}
+    .stat-icon.blue{background:rgba(59,130,246,.12);color:var(--blue)}
+    .stat-trend{
+      font-size:12px;font-weight:600;padding:3px 8px;border-radius:20px;
+      display:flex;align-items:center;gap:3px;
+    }
+    .stat-trend.up{background:rgba(34,197,94,.1);color:var(--green)}
+    .stat-trend.down{background:rgba(239,68,68,.1);color:var(--red)}
+    .stat-value{font-size:32px;font-weight:800;letter-spacing:-1px;line-height:1}
+    .stat-label{font-size:13px;color:var(--text2);margin-top:4px;font-weight:500}
 
-    /* ====== TOP BAR ====== */
-    .topbar {
-      height: var(--topbar-h);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px; gap: 16px;
-      background: rgba(15,15,26,0.6);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      position: sticky; top: 0; z-index: 50;
+    /* ===== CHART ===== */
+    .chart-card{
+      background:var(--card-bg);backdrop-filter:blur(12px);
+      border:1px solid var(--card-border);border-radius:var(--radius);
+      padding:24px;margin-bottom:28px;
     }
-    .topbar-left { display: flex; align-items: center; gap: 16px; }
-    .page-title { font-size: 20px; font-weight: 700; }
-    .search-box {
-      position: relative; width: 280px;
+    .chart-title{font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+    .chart-title .dot{width:8px;height:8px;border-radius:50%;background:var(--orange)}
+    .bar-chart{
+      display:flex;align-items:flex-end;gap:12px;height:160px;
+      padding:0 8px;position:relative;
     }
-    .search-box input {
-      width: 100%; padding: 10px 16px 10px 40px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: inherit; font-size: 13px;
-      transition: all var(--transition);
-      outline: none;
+    .bar-chart::before{
+      content:'';position:absolute;bottom:0;left:0;right:0;
+      height:1px;background:var(--border);
     }
-    .search-box input::placeholder { color: var(--text-muted); }
-    .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
-    .search-box .search-icon {
-      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); font-size: 14px;
+    .bar-col{
+      flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+      position:relative;z-index:1;
     }
-    .topbar-right { display: flex; align-items: center; gap: 16px; }
-    .icon-btn {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      color: var(--text-dim); display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 16px; position: relative;
-      transition: all var(--transition);
+    .bar{
+      width:100%;max-width:48px;border-radius:8px 8px 4px 4px;
+      background:linear-gradient(180deg,var(--orange),rgba(249,115,22,.4));
+      transition:all .5s cubic-bezier(.4,0,.2,1);
+      min-height:4px;position:relative;
     }
-    .icon-btn:hover { background: var(--bg-card-hover); color: var(--text); border-color: var(--border-active); }
-    .icon-btn .notif-dot {
-      position: absolute; top: 8px; right: 8px;
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--danger); border: 2px solid var(--bg);
+    .bar:hover{
+      background:linear-gradient(180deg,var(--orange2),var(--orange));
+      box-shadow:0 0 20px rgba(249,115,22,.3);
     }
-    .avatar {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 600; color: #fff;
-      cursor: pointer;
+    .bar-val{
+      position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+      font-size:11px;font-weight:700;color:var(--orange);opacity:0;transition:opacity .2s;
     }
+    .bar:hover .bar-val{opacity:1}
+    .bar-label{font-size:11px;color:var(--text3);font-weight:500}
 
-    /* ====== PAGE CONTENT ====== */
-    .page { display: none; padding: 28px 32px 40px; animation: fadeIn 0.35s ease; }
-    .page.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    /* ===== TABLE / LIST ===== */
+    .card{
+      background:var(--card-bg);backdrop-filter:blur(12px);
+      border:1px solid var(--card-border);border-radius:var(--radius);
+      overflow:hidden;
+    }
+    .card-header{
+      padding:18px 22px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .card-header h3{font-size:15px;font-weight:700}
+    table{width:100%;border-collapse:collapse}
+    th{
+      text-align:left;padding:12px 18px;font-size:11px;font-weight:600;
+      color:var(--text3);text-transform:uppercase;letter-spacing:.8px;
+      background:rgba(26,26,40,.5);border-bottom:1px solid var(--border);
+    }
+    td{
+      padding:14px 18px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    tr:last-child td{border-bottom:none}
+    tr.clickable{cursor:pointer;transition:background .15s}
+    tr.clickable:hover{background:rgba(249,115,22,.04)}
 
-    /* ====== STAT CARDS ====== */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
-      margin-bottom: 28px;
+    /* ===== BADGES ===== */
+    .badge{
+      display:inline-flex;align-items:center;gap:5px;
+      padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;
     }
-    .stat-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 22px 24px;
-      transition: all var(--transition);
-      position: relative; overflow: hidden;
-    }
-    .stat-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--card-accent, var(--primary)), transparent);
-      opacity: 0; transition: opacity var(--transition);
-    }
-    .stat-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); border-color: rgba(255,255,255,0.1); }
-    .stat-card:hover::before { opacity: 1; }
-    .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .stat-label { font-size: 13px; color: var(--text-dim); font-weight: 500; }
-    .stat-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-    }
-    .stat-value { font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
-    .stat-trend { display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; }
-    .stat-trend.up { color: var(--success); }
-    .stat-trend.down { color: var(--danger); }
+    .badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    .badge.actief{background:rgba(59,130,246,.12);color:var(--blue)}
+    .badge.actief::before{background:var(--blue)}
+    .badge.gekwalificeerd{background:rgba(34,197,94,.12);color:var(--green)}
+    .badge.gekwalificeerd::before{background:var(--green)}
+    .badge.niet_gekwalificeerd{background:rgba(239,68,68,.12);color:var(--red)}
+    .badge.niet_gekwalificeerd::before{background:var(--red)}
+    .badge.afspraak_gepland{background:rgba(249,115,22,.12);color:var(--orange)}
+    .badge.afspraak_gepland::before{background:var(--orange)}
 
-    /* Card accent colors */
-    .stat-card:nth-child(1) { --card-accent: var(--primary); }
-    .stat-card:nth-child(1) .stat-icon { background: rgba(124,58,237,0.15); color: var(--primary-light); }
-    .stat-card:nth-child(2) { --card-accent: var(--accent); }
-    .stat-card:nth-child(2) .stat-icon { background: rgba(6,182,212,0.15); color: var(--accent); }
-    .stat-card:nth-child(3) { --card-accent: var(--success); }
-    .stat-card:nth-child(3) .stat-icon { background: rgba(34,197,94,0.15); color: var(--success); }
-    .stat-card:nth-child(4) { --card-accent: var(--warning); }
-    .stat-card:nth-child(4) .stat-icon { background: rgba(245,158,11,0.15); color: var(--warning); }
+    /* Score */
+    .score-wrap{display:flex;align-items:center;gap:8px}
+    .score-bar{width:48px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+    .score-fill{height:100%;border-radius:3px;transition:width .5s}
+    .score-fill.low{background:var(--red)}
+    .score-fill.mid{background:var(--amber)}
+    .score-fill.high{background:var(--green)}
 
-    /* ====== CHART ====== */
-    .content-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; margin-bottom: 28px; }
-    .glass-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-    }
-    .card-title {
-      font-size: 15px; font-weight: 600; margin-bottom: 20px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .card-title .subtitle { font-size: 12px; color: var(--text-muted); font-weight: 400; }
-    .chart-container { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding-top: 8px; }
-    .chart-bar-wrap {
-      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%;
-      justify-content: flex-end;
-    }
-    .chart-bar {
-      width: 100%; border-radius: 6px 6px 2px 2px;
-      background: linear-gradient(180deg, var(--primary) 0%, rgba(124,58,237,0.3) 100%);
-      transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-      min-height: 8px; position: relative; cursor: pointer;
-    }
-    .chart-bar:hover {
-      background: linear-gradient(180deg, var(--accent) 0%, rgba(6,182,212,0.3) 100%);
-      box-shadow: 0 0 20px var(--accent-glow);
-    }
-    .chart-bar-tooltip {
-      position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,0.8); color: #fff; font-size: 11px; font-weight: 600;
-      padding: 4px 8px; border-radius: 6px; white-space: nowrap;
-      opacity: 0; transition: opacity 0.2s; pointer-events: none;
-    }
-    .chart-bar:hover .chart-bar-tooltip { opacity: 1; }
-    .chart-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+    .empty{text-align:center;padding:48px 24px;color:var(--text3);font-size:14px}
 
-    /* ====== ACTIVITY FEED ====== */
-    .activity-list { display: flex; flex-direction: column; gap: 12px; max-height: 220px; overflow-y: auto; }
-    .activity-item {
-      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
-      border-radius: var(--radius-sm); transition: background var(--transition);
-      cursor: pointer;
+    /* ===== GESPREKKEN SPLIT ===== */
+    .chat-layout{display:grid;grid-template-columns:340px 1fr;gap:0;height:calc(100vh - 130px)}
+    .chat-list{
+      border-right:1px solid var(--border);overflow-y:auto;
+      background:rgba(18,18,28,.5);
     }
-    .activity-item:hover { background: rgba(255,255,255,0.03); }
-    .activity-avatar {
-      width: 36px; height: 36px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 600; color: #fff; flex-shrink: 0;
+    .chat-search{
+      padding:16px;border-bottom:1px solid var(--border);
+      position:sticky;top:0;background:rgba(18,18,28,.9);backdrop-filter:blur(12px);
+      z-index:2;
     }
-    .activity-info { flex: 1; min-width: 0; }
-    .activity-name { font-size: 13px; font-weight: 600; }
-    .activity-msg { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .activity-meta { text-align: right; flex-shrink: 0; }
-    .activity-time { font-size: 11px; color: var(--text-muted); }
+    .chat-search input{
+      width:100%;padding:10px 14px 10px 36px;border-radius:10px;
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .chat-search input:focus{outline:none;border-color:var(--orange)}
+    .chat-search-icon{position:absolute;left:28px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
+    .chat-search{position:relative}
+    .conv-item{
+      padding:14px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.03);
+      transition:all .15s;display:flex;gap:12px;align-items:flex-start;
+    }
+    .conv-item:hover{background:rgba(249,115,22,.04)}
+    .conv-item.active{background:rgba(249,115,22,.08);border-left:3px solid var(--orange)}
+    .conv-avatar{
+      width:36px;height:36px;border-radius:10px;
+      background:linear-gradient(135deg,rgba(249,115,22,.2),rgba(245,158,11,.1));
+      display:flex;align-items:center;justify-content:center;
+      font-size:14px;font-weight:700;color:var(--orange);flex-shrink:0;
+    }
+    .conv-info{flex:1;min-width:0}
+    .conv-name{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conv-preview{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conv-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+    .conv-time{font-size:11px;color:var(--text3)}
+    .conv-badge-sm{
+      width:8px;height:8px;border-radius:50%;
+    }
+    .chat-view{display:flex;flex-direction:column;overflow:hidden}
+    .chat-header-bar{
+      padding:16px 20px;border-bottom:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;
+      background:rgba(18,18,28,.5);
+    }
+    .chat-header-bar h3{font-size:15px;font-weight:700}
+    .chat-messages{
+      flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;
+    }
+    .msg{
+      max-width:72%;padding:12px 16px;border-radius:16px;font-size:13px;
+      line-height:1.6;position:relative;animation:fadeUp .25s ease;
+    }
+    .msg.agent{
+      align-self:flex-start;
+      background:rgba(249,115,22,.1);
+      border:1px solid rgba(249,115,22,.12);
+      border-bottom-left-radius:4px;
+    }
+    .msg.lead{
+      align-self:flex-end;
+      background:var(--bg4);
+      border:1px solid rgba(255,255,255,.06);
+      border-bottom-right-radius:4px;
+    }
+    .msg .meta{font-size:11px;color:var(--text3);margin-top:6px}
+    .chat-input{
+      padding:16px 20px;border-top:1px solid var(--border);
+      display:flex;gap:10px;background:rgba(18,18,28,.5);
+    }
+    .chat-input input{
+      flex:1;padding:11px 16px;border-radius:12px;
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .chat-input input:focus{outline:none;border-color:var(--orange)}
+    .chat-no-select{
+      display:flex;align-items:center;justify-content:center;
+      flex:1;color:var(--text3);font-size:14px;
+      flex-direction:column;gap:12px;
+    }
+    .chat-no-select .icon{font-size:48px;opacity:.3}
 
-    /* ====== STATUS BADGES ====== */
-    .badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 4px 10px; border-radius: 8px;
-      font-size: 11px; font-weight: 600; white-space: nowrap;
+    /* Lead info panel */
+    .lead-info-card{
+      background:var(--card-bg);backdrop-filter:blur(12px);
+      border:1px solid var(--card-border);border-radius:12px;
+      padding:16px;margin-bottom:16px;
     }
-    .badge::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
+    .lead-info-card h4{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--orange)}
+    .lead-field{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:6px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,.03);
     }
-    .badge-actief { background: rgba(59,130,246,0.12); color: #60A5FA; }
-    .badge-actief::before { background: #60A5FA; }
-    .badge-gekwalificeerd { background: rgba(34,197,94,0.12); color: #4ADE80; }
-    .badge-gekwalificeerd::before { background: #4ADE80; }
-    .badge-niet_gekwalificeerd { background: rgba(239,68,68,0.12); color: #F87171; }
-    .badge-niet_gekwalificeerd::before { background: #F87171; }
-    .badge-afspraak_gepland { background: rgba(124,58,237,0.12); color: #A78BFA; }
-    .badge-afspraak_gepland::before { background: #A78BFA; }
+    .lead-field:last-child{border-bottom:none}
+    .lead-field .lbl{color:var(--text3)}
+    .lead-field .val{color:var(--text);font-weight:500}
 
-    /* ====== CONVERSATIONS TABLE ====== */
-    .conv-table { width: 100%; }
-    .conv-table-header {
-      display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 1.2fr;
-      padding: 10px 16px; font-size: 12px; color: var(--text-muted);
-      font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-      border-bottom: 1px solid var(--border);
+    /* ===== TENANTS GRID ===== */
+    .tenant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+    .tenant-card{
+      background:var(--card-bg);backdrop-filter:blur(12px);
+      border:1px solid var(--card-border);border-radius:var(--radius);
+      padding:22px;transition:all .3s;
     }
-    .conv-row {
-      display: grid; grid-template-columns: 2fr 1.2fr 0.8fr 0.8fr 1.2fr;
-      padding: 14px 16px; align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      cursor: pointer; transition: background var(--transition);
+    .tenant-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 32px rgba(249,115,22,.08)}
+    .tenant-card h4{font-size:16px;font-weight:700;margin-bottom:4px}
+    .tenant-card .tc-id{font-size:12px;color:var(--text3);margin-bottom:12px}
+    .tenant-card .tc-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}
+    .tenant-card .tc-item{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:5px}
+    .tenant-card .tc-item .ic{color:var(--orange);font-size:13px}
+    .tc-status{display:flex;gap:8px;margin-bottom:16px}
+    .tc-pill{
+      font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;
     }
-    .conv-row:hover { background: rgba(255,255,255,0.03); }
-    .conv-lead { display: flex; align-items: center; gap: 12px; }
-    .conv-lead-avatar {
-      width: 34px; height: 34px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
-    }
-    .conv-lead-name { font-size: 13px; font-weight: 600; }
-    .conv-lead-company { font-size: 12px; color: var(--text-dim); }
-    .conv-score {
-      font-size: 14px; font-weight: 700;
-    }
-    .conv-time { font-size: 12px; color: var(--text-dim); }
+    .tc-pill.ok{background:rgba(34,197,94,.1);color:var(--green)}
+    .tc-pill.no{background:rgba(239,68,68,.1);color:var(--red)}
+    .tenant-card .actions{display:flex;gap:8px}
 
-    /* ====== GESPREKKEN PAGE ====== */
-    .chat-layout { display: grid; grid-template-columns: 320px 1fr 280px; height: calc(100vh - var(--topbar-h) - 56px); gap: 0; }
-    .chat-sidebar {
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      background: rgba(255,255,255,0.02);
+    /* ===== INSTELLINGEN ===== */
+    .settings-grid{display:grid;grid-template-columns:240px 1fr;gap:0;min-height:calc(100vh - 130px)}
+    .settings-nav{
+      border-right:1px solid var(--border);padding:20px 12px;
+      background:rgba(18,18,28,.5);
     }
-    .chat-sidebar-header { padding: 16px; border-bottom: 1px solid var(--border); }
-    .chat-search {
-      width: 100%; padding: 10px 14px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: inherit; font-size: 13px; outline: none;
+    .settings-nav-item{
+      padding:10px 14px;border-radius:10px;cursor:pointer;
+      font-size:13px;font-weight:500;color:var(--text2);transition:all .15s;
+      margin-bottom:2px;
     }
-    .chat-search:focus { border-color: var(--primary); }
-    .chat-list { flex: 1; overflow-y: auto; }
-    .chat-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px; cursor: pointer;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      transition: background var(--transition);
-    }
-    .chat-item:hover { background: rgba(255,255,255,0.03); }
-    .chat-item.active { background: rgba(124,58,237,0.1); border-left: 3px solid var(--primary); }
-    .chat-item-info { flex: 1; min-width: 0; }
-    .chat-item-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-    .chat-item-preview { font-size: 12px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chat-item-meta { text-align: right; flex-shrink: 0; }
-    .chat-item-time { font-size: 11px; color: var(--text-muted); }
+    .settings-nav-item:hover{background:rgba(249,115,22,.06);color:var(--text)}
+    .settings-nav-item.active{background:rgba(249,115,22,.1);color:var(--orange)}
+    .settings-content{padding:28px 32px;overflow-y:auto}
+    .settings-section{display:none}
+    .settings-section.active{display:block;animation:fadeUp .25s ease}
+    .settings-section h3{font-size:18px;font-weight:700;margin-bottom:6px}
+    .settings-section .desc{font-size:13px;color:var(--text2);margin-bottom:24px}
 
-    /* Chat Area */
-    .chat-area { display: flex; flex-direction: column; }
-    .chat-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(255,255,255,0.02);
+    /* ===== FORMS ===== */
+    .form-group{margin-bottom:18px}
+    .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+    .form-group input,.form-group textarea,.form-group select{
+      width:100%;padding:11px 14px;background:var(--bg3);
+      border:1px solid var(--border);border-radius:10px;
+      color:var(--text);font-size:13px;font-family:inherit;
+      transition:border-color .2s;
     }
-    .chat-header-name { font-size: 15px; font-weight: 600; }
-    .chat-header-status { font-size: 12px; color: var(--text-dim); }
-    .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-    .chat-msg {
-      max-width: 70%; padding: 12px 16px;
-      border-radius: 16px; font-size: 13px; line-height: 1.5;
-      animation: msgIn 0.3s ease;
+    .form-group input:focus,.form-group textarea:focus{
+      outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(249,115,22,.1);
     }
-    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .chat-msg.agent {
-      align-self: flex-start;
-      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(124,58,237,0.08));
-      border: 1px solid rgba(124,58,237,0.2);
-      border-bottom-left-radius: 4px;
-    }
-    .chat-msg.lead {
-      align-self: flex-end;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      border-bottom-right-radius: 4px;
-    }
-    .chat-msg-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
-    .chat-input-area {
-      padding: 16px 20px; border-top: 1px solid var(--border);
-      display: flex; gap: 12px; background: rgba(255,255,255,0.02);
-    }
-    .chat-input {
-      flex: 1; padding: 12px 16px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: inherit; font-size: 13px; outline: none; resize: none;
-    }
-    .chat-input:focus { border-color: var(--primary); }
+    .form-group textarea{min-height:90px;resize:vertical}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
 
-    /* Lead Info Panel */
-    .lead-panel {
-      border-left: 1px solid var(--border);
-      padding: 20px; overflow-y: auto;
-      background: rgba(255,255,255,0.02);
+    /* Toggle */
+    .toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+    .toggle-wrap:last-child{border-bottom:none}
+    .toggle-info .toggle-label{font-size:14px;font-weight:500}
+    .toggle-info .toggle-desc{font-size:12px;color:var(--text3);margin-top:2px}
+    .toggle{
+      width:44px;height:24px;border-radius:12px;
+      background:var(--bg4);cursor:pointer;position:relative;
+      transition:background .2s;flex-shrink:0;
     }
-    .lead-panel-header { text-align: center; margin-bottom: 24px; }
-    .lead-panel-avatar {
-      width: 64px; height: 64px; border-radius: 16px;
-      margin: 0 auto 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; font-weight: 700; color: #fff;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
+    .toggle.on{background:var(--orange)}
+    .toggle::after{
+      content:'';position:absolute;top:3px;left:3px;
+      width:18px;height:18px;border-radius:50%;
+      background:#fff;transition:transform .2s;
     }
-    .lead-panel-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
-    .lead-panel-company { font-size: 13px; color: var(--text-dim); }
-    .lead-field { margin-bottom: 16px; }
-    .lead-field-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-    .lead-field-value { font-size: 13px; color: var(--text); }
-    .score-bar-wrap { margin-top: 8px; }
-    .score-bar-bg { height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
-    .score-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .toggle.on::after{transform:translateX(20px)}
 
-    /* ====== TENANTS PAGE ====== */
-    .tenants-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-    .tenants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-    .tenant-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 24px;
-      transition: all var(--transition);
-      cursor: pointer;
+    /* ===== MODAL ===== */
+    .modal-overlay{
+      display:none;position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+      z-index:500;justify-content:center;align-items:center;
     }
-    .tenant-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); border-color: rgba(255,255,255,0.1); }
-    .tenant-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-    .tenant-initial {
-      width: 48px; height: 48px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px; font-weight: 800; color: #fff;
+    .modal-overlay.show{display:flex}
+    .modal{
+      background:var(--bg2);border:1px solid var(--border2);
+      border-radius:20px;width:90%;max-width:640px;max-height:85vh;
+      overflow-y:auto;padding:28px;animation:fadeUp .3s ease;
     }
-    .tenant-name { font-size: 16px; font-weight: 700; }
-    .tenant-id { font-size: 12px; color: var(--text-muted); }
-    .tenant-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
-    .tenant-stat { padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: 8px; }
-    .tenant-stat-label { font-size: 11px; color: var(--text-muted); }
-    .tenant-stat-value { font-size: 18px; font-weight: 700; }
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .modal-header h3{font-size:18px;font-weight:700}
+    .close{
+      width:34px;height:34px;border-radius:10px;
+      background:var(--bg3);border:1px solid var(--border);
+      color:var(--text2);cursor:pointer;font-size:18px;
+      display:flex;align-items:center;justify-content:center;transition:all .15s;
+    }
+    .close:hover{background:var(--bg4);color:var(--text)}
 
-    /* ====== BUTTONS ====== */
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 20px; border-radius: var(--radius-sm);
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      cursor: pointer; border: none; transition: all var(--transition);
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:1024px){
+      .chat-layout{grid-template-columns:280px 1fr}
+      .settings-grid{grid-template-columns:200px 1fr}
     }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: #fff; box-shadow: 0 4px 16px var(--primary-glow);
+    @media(max-width:768px){
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0)}
+      .mobile-toggle{display:flex}
+      .mobile-overlay.show{display:block}
+      .main{margin-left:0}
+      .topbar{padding:16px 16px 16px 64px}
+      .content{padding:20px 16px}
+      .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+      .chat-layout{grid-template-columns:1fr;height:auto}
+      .chat-list{max-height:300px;border-right:none;border-bottom:1px solid var(--border)}
+      .chat-view{min-height:400px}
+      .settings-grid{grid-template-columns:1fr}
+      .settings-nav{display:flex;overflow-x:auto;padding:12px;gap:4px;border-right:none;border-bottom:1px solid var(--border)}
+      .settings-nav-item{white-space:nowrap}
+      .form-row{grid-template-columns:1fr}
+      .tenant-grid{grid-template-columns:1fr}
+      .modal{width:95%;padding:20px}
+      .stat-value{font-size:26px}
     }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--primary-glow); }
-    .btn-ghost {
-      background: var(--bg-card); color: var(--text-dim);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { background: var(--bg-card-hover); color: var(--text); }
-    .btn-send {
-      padding: 12px 20px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: #fff; border: none; border-radius: var(--radius-sm);
-      font-family: inherit; font-size: 13px; font-weight: 600;
-      cursor: pointer; transition: all var(--transition);
-    }
-    .btn-send:hover { transform: translateY(-1px); box-shadow: 0 4px 16px var(--primary-glow); }
-    .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
-    .btn-danger:hover { background: rgba(239,68,68,0.2); }
-
-    /* ====== MODAL ====== */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      z-index: 200; align-items: center; justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-      background: #1A1A2E;
-      border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 32px;
-      width: 560px; max-width: 90vw; max-height: 85vh; overflow-y: auto;
-      animation: modalIn 0.3s ease;
-    }
-    @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-    .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .form-input, .form-textarea, .form-select {
-      width: 100%; padding: 10px 14px;
-      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text);
-      font-family: inherit; font-size: 13px; outline: none;
-      transition: border-color var(--transition);
-    }
-    .form-input:focus, .form-textarea:focus { border-color: var(--primary); }
-    .form-textarea { min-height: 80px; resize: vertical; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-
-    /* ====== INSTELLINGEN PAGE ====== */
-    .settings-sections { display: flex; flex-direction: column; gap: 24px; }
-    .settings-card {
-      background: var(--bg-card);
-      backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 28px;
-    }
-    .settings-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-    .setting-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .setting-row:last-child { border-bottom: none; }
-    .setting-info { flex: 1; }
-    .setting-name { font-size: 14px; font-weight: 500; }
-    .setting-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-    /* Toggle switch */
-    .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-    .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0; border-radius: 12px;
-      background: rgba(255,255,255,0.1); cursor: pointer;
-      transition: all var(--transition);
-    }
-    .toggle-slider::before {
-      content: ''; position: absolute;
-      left: 3px; top: 3px; width: 18px; height: 18px;
-      border-radius: 50%; background: #fff;
-      transition: transform var(--transition);
-    }
-    .toggle input:checked + .toggle-slider { background: var(--primary); }
-    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
-
-    /* Questions list */
-    .question-list { display: flex; flex-direction: column; gap: 8px; }
-    .question-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border); border-radius: var(--radius-sm);
-    }
-    .question-item .drag-handle { color: var(--text-muted); cursor: grab; font-size: 14px; }
-    .question-item .question-text { flex: 1; font-size: 13px; }
-    .question-item .remove-btn {
-      background: none; border: none; color: var(--text-muted);
-      cursor: pointer; font-size: 14px; padding: 4px;
-      transition: color var(--transition);
-    }
-    .question-item .remove-btn:hover { color: var(--danger); }
-    .add-question-row { display: flex; gap: 8px; margin-top: 12px; }
-    .add-question-row input { flex: 1; }
-
-    /* ====== EMPTY STATE ====== */
-    .empty-state {
-      text-align: center; padding: 60px 20px;
-      color: var(--text-dim);
-    }
-    .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
-    .empty-state p { font-size: 14px; }
-
-    /* ====== RESPONSIVE ====== */
-    @media (max-width: 1200px) {
-      .chat-layout { grid-template-columns: 280px 1fr; }
-      .lead-panel { display: none; }
-    }
-    @media (max-width: 1024px) {
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .content-grid { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .sidebar-overlay.open { display: block; }
-      .menu-toggle { display: block; }
-      .main { margin-left: 0; }
-      .topbar { padding: 0 16px; }
-      .search-box { width: 180px; }
-      .page { padding: 20px 16px; }
-      .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-      .conv-table-header, .conv-row { grid-template-columns: 2fr 1fr 1fr; }
-      .conv-table-header > *:nth-child(4), .conv-row > *:nth-child(4),
-      .conv-table-header > *:nth-child(2), .conv-row > *:nth-child(2) { display: none; }
-      .chat-layout { grid-template-columns: 1fr; }
-      .chat-sidebar { display: none; }
-    }
-    @media (max-width: 480px) {
-      .stats-grid { grid-template-columns: 1fr; }
-      .search-box { display: none; }
-    }
-
-    /* ====== LOADING SKELETON ====== */
-    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-    /* ====== TENANT SELECT (topbar) ====== */
-    .tenant-select {
-      padding: 8px 12px; background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); color: var(--text); font-family: inherit;
-      font-size: 13px; cursor: pointer; outline: none;
-      -webkit-appearance: none; appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B8FA3' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 10px center;
-      padding-right: 30px;
-    }
-    .tenant-select:focus { border-color: var(--primary); }
   </style>
 </head>
 <body>
 
-<!-- SIDEBAR OVERLAY (mobile) -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  <!-- Mobile toggle -->
+  <button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+  <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
 
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="logo-icon">&#9889;</div>
-    <h1>Appointwise</h1>
-  </div>
-  <nav class="sidebar-nav">
-    <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
-      <span class="icon">&#9673;</span> Dashboard
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="logo">
+        <div class="logo-icon">&#9733;</div>
+        <div class="logo-text">Appoint<span>wise</span></div>
+      </a>
     </div>
-    <div class="nav-item" data-page="gesprekken" onclick="switchPage('gesprekken')">
-      <span class="icon">&#128172;</span> Gesprekken
-      <span class="nav-badge" id="convCount">0</span>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard',this)">
+        <span class="nav-icon">&#9632;</span> Dashboard
+      </div>
+      <div class="nav-item" data-page="gesprekken" onclick="navigate('gesprekken',this)">
+        <span class="nav-icon">&#9993;</span> Gesprekken
+      </div>
+      <div class="nav-item" data-page="tenants" onclick="navigate('tenants',this)">
+        <span class="nav-icon">&#9881;</span> Tenants
+      </div>
+      <div class="nav-item" data-page="instellingen" onclick="navigate('instellingen',this)">
+        <span class="nav-icon">&#9881;</span> Instellingen
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      Powered by <a href="#">Bureau-Assist</a>
     </div>
-    <div class="nav-item" data-page="tenants" onclick="switchPage('tenants')">
-      <span class="icon">&#127970;</span> Tenants
-    </div>
-    <div class="nav-item" data-page="instellingen" onclick="switchPage('instellingen')">
-      <span class="icon">&#9881;</span> Instellingen
-    </div>
-  </nav>
-  <div class="sidebar-footer">Powered by <span>Bureau-Assist</span></div>
-</aside>
+  </aside>
 
-<!-- MAIN -->
-<div class="main">
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="menu-toggle" onclick="toggleSidebar()">&#9776;</button>
-      <h2 class="page-title" id="pageTitle">Dashboard</h2>
-    </div>
-    <div class="topbar-right">
-      <select class="tenant-select" id="tenantSelect" onchange="onTenantChange()">
-        <option value="">Alle tenants</option>
-      </select>
-      <div class="search-box">
-        <span class="search-icon">&#128269;</span>
-        <input type="text" placeholder="Zoeken..." id="globalSearch" oninput="handleSearch(this.value)">
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h2 id="pageTitle">Dashboard</h2>
       </div>
-      <button class="icon-btn" onclick="refreshAll()">
-        &#8635;
-        <span class="notif-dot" id="notifDot" style="display:none;"></span>
-      </button>
-      <div class="avatar">BA</div>
-    </div>
-  </header>
-
-  <!-- ===================== DASHBOARD PAGE ===================== -->
-  <div class="page active" id="page-dashboard">
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Totaal Leads</span>
-          <div class="stat-icon">&#128101;</div>
-        </div>
-        <div class="stat-value" id="statTotal">0</div>
-        <div class="stat-trend up" id="trendTotal">&#8599; +12% deze week</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Gekwalificeerd</span>
-          <div class="stat-icon">&#10003;</div>
-        </div>
-        <div class="stat-value" id="statQualified">0</div>
-        <div class="stat-trend up" id="trendQualified">&#8599; +8% deze week</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Afspraken</span>
-          <div class="stat-icon">&#128197;</div>
-        </div>
-        <div class="stat-value" id="statAppointments">0</div>
-        <div class="stat-trend up" id="trendAppointments">&#8599; +15% deze week</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Conversie %</span>
-          <div class="stat-icon">&#128200;</div>
-        </div>
-        <div class="stat-value" id="statConversion">0%</div>
-        <div class="stat-trend up" id="trendConversion">&#8599; +3% deze week</div>
+      <div class="topbar-right">
+        <select class="tenant-select" id="tenantSelect" onchange="onTenantChange()">
+          <option value="">Alle tenants</option>
+        </select>
+        <button class="btn btn-primary" onclick="showTenantForm()">+ Nieuwe tenant</button>
       </div>
     </div>
 
-    <div class="content-grid">
-      <!-- CHART -->
-      <div class="glass-card">
-        <div class="card-title">
-          Leads per dag
-          <span class="subtitle">Afgelopen 7 dagen</span>
-        </div>
-        <div class="chart-container" id="chartContainer"></div>
-      </div>
-      <!-- RECENT ACTIVITY -->
-      <div class="glass-card">
-        <div class="card-title">Recente activiteit</div>
-        <div class="activity-list" id="activityList"></div>
-      </div>
-    </div>
+    <div class="content">
 
-    <!-- RECENT CONVERSATIONS TABLE -->
-    <div class="glass-card">
-      <div class="card-title">
-        Recente gesprekken
-        <span class="subtitle" id="convTableCount"></span>
-      </div>
-      <div class="conv-table">
-        <div class="conv-table-header">
-          <div>Lead</div>
-          <div>Status</div>
-          <div>Score</div>
-          <div>Berichten</div>
-          <div>Laatste update</div>
+      <!-- ========== PAGE: DASHBOARD ========== -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon orange">&#9679;</div>
+              <div class="stat-trend up">&#9650; 12%</div>
+            </div>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Totaal leads</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon green">&#10003;</div>
+              <div class="stat-trend up">&#9650; 8%</div>
+            </div>
+            <div class="stat-value" id="statQualified">0</div>
+            <div class="stat-label">Gekwalificeerd</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon amber">&#9733;</div>
+              <div class="stat-trend up">&#9650; 15%</div>
+            </div>
+            <div class="stat-value" id="statBooked">0</div>
+            <div class="stat-label">Afspraken</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon blue">%</div>
+              <div class="stat-trend up">&#9650; 3%</div>
+            </div>
+            <div class="stat-value" id="statConversion">0%</div>
+            <div class="stat-label">Conversie</div>
+          </div>
         </div>
-        <div id="convTableBody"></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ===================== GESPREKKEN PAGE ===================== -->
-  <div class="page" id="page-gesprekken">
-    <div class="chat-layout">
-      <!-- Chat list -->
-      <div class="chat-sidebar">
-        <div class="chat-sidebar-header">
-          <input class="chat-search" type="text" placeholder="Gesprek zoeken..." id="chatSearch" oninput="filterChats(this.value)">
+        <!-- Chart -->
+        <div class="chart-card">
+          <div class="chart-title"><span class="dot"></span> Leads per dag (afgelopen 7 dagen)</div>
+          <div class="bar-chart" id="barChart"></div>
         </div>
-        <div class="chat-list" id="chatList"></div>
+
+        <!-- Recent conversations -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Recente gesprekken</h3>
+            <button class="btn btn-sm btn-ghost" onclick="navigate('gesprekken',document.querySelector('[data-page=gesprekken]'))">Alles bekijken &#8594;</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Lead</th>
+                <th>Bedrijf</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Bijgewerkt</th>
+              </tr>
+            </thead>
+            <tbody id="recentTable">
+              <tr><td colspan="5" class="empty">Selecteer een tenant om data te laden</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <!-- Chat area -->
-      <div class="chat-area">
-        <div class="chat-header" id="chatHeader">
-          <div class="activity-avatar" style="background:linear-gradient(135deg,var(--primary),var(--accent));" id="chatAvatar">?</div>
+
+      <!-- ========== PAGE: GESPREKKEN ========== -->
+      <div class="page" id="page-gesprekken">
+        <div class="card" style="overflow:hidden">
+          <div class="chat-layout">
+            <!-- Left: list -->
+            <div class="chat-list" id="chatList">
+              <div class="chat-search">
+                <span class="chat-search-icon">&#128269;</span>
+                <input type="text" placeholder="Zoek gesprekken..." id="chatSearchInput" oninput="filterConversations()">
+              </div>
+              <div id="convListItems">
+                <div class="empty">Geen gesprekken</div>
+              </div>
+            </div>
+            <!-- Right: chat -->
+            <div class="chat-view" id="chatView">
+              <div class="chat-no-select" id="chatNoSelect">
+                <div class="icon">&#9993;</div>
+                <div>Selecteer een gesprek</div>
+              </div>
+              <div id="chatActive" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+                <div class="chat-header-bar">
+                  <div>
+                    <h3 id="chatConvName">-</h3>
+                    <span style="font-size:12px;color:var(--text3)" id="chatConvSub">-</span>
+                  </div>
+                  <span class="badge" id="chatConvBadge"></span>
+                </div>
+                <div id="chatLeadInfo"></div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input">
+                  <input type="text" placeholder="Typ een bericht..." id="chatMsgInput" onkeydown="if(event.key==='Enter')sendMessage()">
+                  <button class="btn btn-primary btn-sm" onclick="sendMessage()">Verstuur</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PAGE: TENANTS ========== -->
+      <div class="page" id="page-tenants">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
           <div>
-            <div class="chat-header-name" id="chatName">Selecteer een gesprek</div>
-            <div class="chat-header-status" id="chatStatus"></div>
+            <h3 style="font-size:16px;font-weight:700">Tenant beheer</h3>
+            <p style="font-size:13px;color:var(--text2)">Beheer alle gekoppelde bedrijven</p>
           </div>
+          <button class="btn btn-primary" onclick="showTenantForm()">+ Nieuwe tenant</button>
         </div>
-        <div class="chat-messages" id="chatMessages">
-          <div class="empty-state">
-            <div class="icon">&#128172;</div>
-            <p>Selecteer een gesprek om de berichten te bekijken</p>
-          </div>
-        </div>
-        <div class="chat-input-area">
-          <textarea class="chat-input" id="chatInput" placeholder="Typ een bericht om de bot over te nemen..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
-          <button class="btn-send" onclick="sendMessage()">Verstuur</button>
+        <div class="tenant-grid" id="tenantGrid">
+          <div class="empty">Laden...</div>
         </div>
       </div>
-      <!-- Lead panel -->
-      <div class="lead-panel" id="leadPanel">
-        <div class="lead-panel-header">
-          <div class="lead-panel-avatar" id="leadPanelAvatar">?</div>
-          <div class="lead-panel-name" id="leadPanelName">—</div>
-          <div class="lead-panel-company" id="leadPanelCompany"></div>
+
+      <!-- ========== PAGE: INSTELLINGEN ========== -->
+      <div class="page" id="page-instellingen">
+        <div class="card" style="overflow:hidden">
+          <div class="settings-grid">
+            <div class="settings-nav">
+              <div class="settings-nav-item active" onclick="switchSettings('algemeen',this)">Algemeen</div>
+              <div class="settings-nav-item" onclick="switchSettings('apikeys',this)">API Keys</div>
+              <div class="settings-nav-item" onclick="switchSettings('kwalificatie',this)">Kwalificatievragen</div>
+              <div class="settings-nav-item" onclick="switchSettings('notificaties',this)">Notificaties</div>
+            </div>
+            <div class="settings-content">
+              <!-- Algemeen -->
+              <div class="settings-section active" id="settings-algemeen">
+                <h3>Algemeen</h3>
+                <p class="desc">Basisconfiguratie voor de geselecteerde tenant</p>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Bedrijfsnaam</label>
+                    <input type="text" id="set_businessName" placeholder="Bedrijfsnaam">
+                  </div>
+                  <div class="form-group">
+                    <label>Agent naam</label>
+                    <input type="text" id="set_agentName" placeholder="Agent naam">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Agent toon/stijl</label>
+                  <input type="text" id="set_agentTone" placeholder="Vriendelijk en professioneel">
+                </div>
+                <div class="form-group">
+                  <label>Boekings-URL</label>
+                  <input type="url" id="set_bookingUrl" placeholder="https://...">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Minimaal budget (&euro;)</label>
+                    <input type="number" id="set_minBudget" value="500">
+                  </div>
+                  <div class="form-group">
+                    <label>Ideale branches</label>
+                    <input type="text" id="set_idealIndustries" placeholder="coaching, consultancy">
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" onclick="saveSettings()">Opslaan</button>
+                </div>
+              </div>
+
+              <!-- API Keys -->
+              <div class="settings-section" id="settings-apikeys">
+                <h3>API Keys</h3>
+                <p class="desc">Configureer externe koppelingen</p>
+                <div class="form-group">
+                  <label>Anthropic API Key</label>
+                  <input type="password" id="set_anthropicKey" placeholder="sk-ant-...">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Twilio Account SID</label>
+                    <input type="text" id="set_twilioSid" placeholder="AC...">
+                  </div>
+                  <div class="form-group">
+                    <label>Twilio Auth Token</label>
+                    <input type="password" id="set_twilioToken" placeholder="">
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>WhatsApp nummer</label>
+                    <input type="text" id="set_twilioPhone" placeholder="whatsapp:+31612345678">
+                  </div>
+                  <div class="form-group">
+                    <label>Webhook secret</label>
+                    <input type="text" id="set_webhookSecret" placeholder="">
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" onclick="saveSettings()">Opslaan</button>
+                </div>
+              </div>
+
+              <!-- Kwalificatie -->
+              <div class="settings-section" id="settings-kwalificatie">
+                <h3>Kwalificatievragen</h3>
+                <p class="desc">Vragen die de agent stelt om leads te kwalificeren</p>
+                <div class="form-group">
+                  <label>Vragen (een per regel)</label>
+                  <textarea id="set_questions" rows="8" placeholder="Wat voor bedrijf heeft u?&#10;Wat is uw budget?&#10;Hoeveel medewerkers?"></textarea>
+                </div>
+                <div class="form-actions">
+                  <button class="btn btn-primary" onclick="saveSettings()">Opslaan</button>
+                </div>
+              </div>
+
+              <!-- Notificaties -->
+              <div class="settings-section" id="settings-notificaties">
+                <h3>Notificaties</h3>
+                <p class="desc">Beheer meldingen en waarschuwingen</p>
+                <div class="toggle-wrap">
+                  <div class="toggle-info">
+                    <div class="toggle-label">E-mail bij nieuwe lead</div>
+                    <div class="toggle-desc">Ontvang een e-mail wanneer een nieuwe lead binnenkomt</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="toggle-wrap">
+                  <div class="toggle-info">
+                    <div class="toggle-label">E-mail bij afspraak</div>
+                    <div class="toggle-desc">Melding wanneer een afspraak is ingepland</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="toggle-wrap">
+                  <div class="toggle-info">
+                    <div class="toggle-label">Dagelijkse samenvatting</div>
+                    <div class="toggle-desc">Ontvang elke ochtend een overzicht van de vorige dag</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="toggle-wrap">
+                  <div class="toggle-info">
+                    <div class="toggle-label">Waarschuwing bij lage score</div>
+                    <div class="toggle-desc">Melding wanneer een lead een score onder 30 krijgt</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div id="leadPanelFields"></div>
       </div>
+
     </div>
   </div>
 
-  <!-- ===================== TENANTS PAGE ===================== -->
-  <div class="page" id="page-tenants">
-    <div class="tenants-header">
-      <h2 style="font-size:18px;font-weight:700;">Tenants beheren</h2>
-      <button class="btn btn-primary" onclick="openTenantModal()">&#43; Nieuwe tenant</button>
-    </div>
-    <div class="tenants-grid" id="tenantsGrid"></div>
-  </div>
-
-  <!-- ===================== INSTELLINGEN PAGE ===================== -->
-  <div class="page" id="page-instellingen">
-    <div class="settings-sections">
-      <!-- Algemeen -->
-      <div class="settings-card">
-        <h3>&#9881; Algemeen</h3>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Auto-refresh gesprekken</div>
-            <div class="setting-desc">Vernieuw gesprekken automatisch elke 10 seconden</div>
-          </div>
-          <label class="toggle"><input type="checkbox" id="settingAutoRefresh" checked onchange="toggleAutoRefresh()"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Desktop notificaties</div>
-            <div class="setting-desc">Ontvang meldingen bij nieuwe leads</div>
-          </div>
-          <label class="toggle"><input type="checkbox" id="settingNotifications" onchange="toggleNotifications()"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Donker thema</div>
-            <div class="setting-desc">Altijd donker thema gebruiken</div>
-          </div>
-          <label class="toggle"><input type="checkbox" checked disabled><span class="toggle-slider"></span></label>
-        </div>
+  <!-- ===== MODAL: TENANT FORM ===== -->
+  <div class="modal-overlay" id="tenantModal" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="tenantModalTitle">Nieuwe tenant toevoegen</h3>
+        <button class="close" onclick="document.getElementById('tenantModal').classList.remove('show')">&times;</button>
       </div>
-
-      <!-- API Keys -->
-      <div class="settings-card">
-        <h3>&#128273; API Keys</h3>
+      <form id="tenantForm" onsubmit="saveTenant(event)">
+        <input type="hidden" id="tf_editMode" value="create">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tenant ID</label>
+            <input type="text" id="tf_id" required placeholder="bijv. mijn-bedrijf">
+          </div>
+          <div class="form-group">
+            <label>Bedrijfsnaam</label>
+            <input type="text" id="tf_businessName" required placeholder="Bureau-Assist">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Agent naam</label>
+            <input type="text" id="tf_agentName" required placeholder="Lisa">
+          </div>
+          <div class="form-group">
+            <label>Agent toon</label>
+            <input type="text" id="tf_agentTone" placeholder="Vriendelijk en professioneel">
+          </div>
+        </div>
         <div class="form-group">
-          <label class="form-label">Anthropic API Key</label>
-          <input class="form-input" type="password" id="settingAnthropicKey" placeholder="sk-ant-...">
+          <label>Kwalificatievragen (een per regel)</label>
+          <textarea id="tf_qualificationQuestions" placeholder="Wat voor bedrijf heeft u?&#10;Wat is uw budget?"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Minimaal budget (&euro;)</label>
+            <input type="number" id="tf_minBudget" value="500" min="0">
+          </div>
+          <div class="form-group">
+            <label>Ideale branches</label>
+            <input type="text" id="tf_idealIndustries" placeholder="coaching, consultancy">
+          </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Twilio Account SID</label>
-          <input class="form-input" type="text" id="settingTwilioSid" placeholder="AC...">
+          <label>Boekings-URL</label>
+          <input type="url" id="tf_bookingUrl" placeholder="https://...">
         </div>
         <div class="form-group">
-          <label class="form-label">Twilio Auth Token</label>
-          <input class="form-input" type="password" id="settingTwilioToken" placeholder="Token...">
+          <label>Anthropic API Key</label>
+          <input type="password" id="tf_anthropicApiKey" placeholder="sk-ant-...">
         </div>
-        <div style="margin-top:16px;">
-          <button class="btn btn-primary" onclick="saveSettings()">Opslaan</button>
-        </div>
-      </div>
-
-      <!-- Kwalificatievragen -->
-      <div class="settings-card">
-        <h3>&#10067; Kwalificatievragen</h3>
-        <div class="question-list" id="questionList"></div>
-        <div class="add-question-row">
-          <input class="form-input" id="newQuestionInput" placeholder="Nieuwe vraag toevoegen...">
-          <button class="btn btn-primary" onclick="addQuestion()">Toevoegen</button>
-        </div>
-      </div>
-
-      <!-- Notificaties -->
-      <div class="settings-card">
-        <h3>&#128276; Notificaties</h3>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Nieuwe lead melding</div>
-            <div class="setting-desc">Melding bij elke nieuwe inkomende lead</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Twilio Account SID</label>
+            <input type="text" id="tf_twilioAccountSid" placeholder="AC...">
           </div>
-          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Kwalificatie voltooid</div>
-            <div class="setting-desc">Melding wanneer een lead gekwalificeerd is</div>
+          <div class="form-group">
+            <label>Twilio Auth Token</label>
+            <input type="password" id="tf_twilioAuthToken" placeholder="">
           </div>
-          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
         </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <div class="setting-name">Afspraak gepland</div>
-            <div class="setting-desc">Melding wanneer een afspraak is ingepland</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>WhatsApp nummer</label>
+            <input type="text" id="tf_twilioPhoneNumber" placeholder="whatsapp:+31612345678">
           </div>
-          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          <div class="form-group">
+            <label>Webhook secret</label>
+            <input type="text" id="tf_webhookSecret" placeholder="">
+          </div>
         </div>
-      </div>
+        <div class="form-actions">
+          <button type="button" class="btn" onclick="document.getElementById('tenantModal').classList.remove('show')">Annuleren</button>
+          <button type="submit" class="btn btn-primary" id="tenantSubmitBtn">Opslaan</button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<!-- ===================== TENANT MODAL ===================== -->
-<div class="modal-overlay" id="tenantModal">
-  <div class="modal">
-    <div class="modal-title" id="tenantModalTitle">Nieuwe tenant</div>
-    <input type="hidden" id="tenantEditId">
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Tenant ID</label>
-        <input class="form-input" id="tenantFormId" placeholder="bijv. mijn-bedrijf">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Bedrijfsnaam</label>
-        <input class="form-input" id="tenantFormBusiness" placeholder="Bedrijfsnaam">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Agent naam</label>
-        <input class="form-input" id="tenantFormAgent" placeholder="bijv. Lisa">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Minimum budget (&euro;)</label>
-        <input class="form-input" type="number" id="tenantFormBudget" placeholder="500">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Agent toon / stijl</label>
-      <textarea class="form-textarea" id="tenantFormTone" placeholder="Beschrijf de communicatiestijl van de agent..."></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Kwalificatievragen (1 per regel)</label>
-      <textarea class="form-textarea" id="tenantFormQuestions" placeholder="Wat is uw branche?&#10;Hoeveel klanten wilt u per maand?&#10;Wat is uw budget?" rows="4"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Ideale branches (komma-gescheiden)</label>
-      <input class="form-input" id="tenantFormIndustries" placeholder="E-commerce, SaaS, Consulting">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Booking URL</label>
-      <input class="form-input" id="tenantFormBooking" placeholder="https://calendly.com/...">
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Anthropic API Key</label>
-        <input class="form-input" type="password" id="tenantFormAnthropicKey" placeholder="sk-ant-...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Webhook Secret</label>
-        <input class="form-input" id="tenantFormWebhookSecret" placeholder="Secret...">
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Twilio SID</label>
-        <input class="form-input" id="tenantFormTwilioSid" placeholder="AC...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Twilio Auth Token</label>
-        <input class="form-input" type="password" id="tenantFormTwilioToken" placeholder="Token...">
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Twilio WhatsApp nummer</label>
-      <input class="form-input" id="tenantFormTwilioPhone" placeholder="whatsapp:+31612345678">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeTenantModal()">Annuleren</button>
-      <button class="btn btn-danger" id="tenantDeleteBtn" style="display:none;" onclick="deleteTenant()">Verwijderen</button>
-      <button class="btn btn-primary" onclick="saveTenant()">Opslaan</button>
-    </div>
-  </div>
-</div>
+  <script>
+    /* ===== STATE ===== */
+    let allTenants = [];
+    let currentTenantId = '';
+    let currentConversations = [];
+    let selectedConvId = null;
+    let usingMockData = false;
 
-<script>
-/* ===========================================================
-   APPOINTWISE DASHBOARD — JavaScript
-   =========================================================== */
+    /* ===== MOCK DATA ===== */
+    const MOCK_TENANTS = [
+      { id: 'bureau-assist', businessName: 'Bureau-Assist', agentName: 'Lisa', agentTone: 'Vriendelijk en professioneel', qualificationQuestions: ['Wat voor bedrijf heeft u?', 'Wat is uw budget?', 'Hoeveel medewerkers?'], minBudget: 500, idealIndustries: ['coaching', 'consultancy'], bookingUrl: 'https://cal.com/bureau-assist', anthropicApiKey: 'sk-***', twilioAccountSid: 'AC***', twilioAuthToken: '', twilioPhoneNumber: 'whatsapp:+31612345678', webhookSecret: '' },
+      { id: 'fitness-pro', businessName: 'FitnessPro Amsterdam', agentName: 'Max', agentTone: 'Sportief en energiek', qualificationQuestions: ['Wat is uw fitnessdoel?', 'Heeft u ervaring met personal training?'], minBudget: 200, idealIndustries: ['fitness', 'gezondheid'], bookingUrl: 'https://cal.com/fitnesspro', anthropicApiKey: '', twilioAccountSid: '', twilioAuthToken: '', twilioPhoneNumber: '', webhookSecret: '' },
+    ];
 
-// ============ STATE ============
-let allConversations = [];
-let allTenants = [];
-let selectedTenantId = '';
-let selectedConvId = null;
-let autoRefreshInterval = null;
-let autoRefreshEnabled = true;
+    const MOCK_CONVERSATIONS = [
+      { id: 'conv-1', leadInfo: { naam: 'Jan de Vries', bedrijf: 'TechStart BV', telefoon: '+31612345001', email: 'jan@techstart.nl', branche: 'IT', budget: 2500 }, score: 85, status: 'gekwalificeerd', messages: [{ role: 'agent', content: 'Hallo Jan! Welkom bij Bureau-Assist. Ik ben Lisa, waarmee kan ik u helpen?', timestamp: '2026-03-21T09:00:00Z' }, { role: 'lead', content: 'Ik zoek hulp bij het opzetten van mijn online marketing.', timestamp: '2026-03-21T09:01:00Z' }, { role: 'agent', content: 'Geweldig! Kunt u me iets meer vertellen over uw bedrijf? Wat voor soort producten of diensten biedt u aan?', timestamp: '2026-03-21T09:01:30Z' }, { role: 'lead', content: 'We zijn een IT-consultancy met 15 medewerkers, focus op cloud migratie.', timestamp: '2026-03-21T09:02:00Z' }, { role: 'agent', content: 'Dat klinkt als een interessant bedrijf! Met een budget van \u20AC2.500 en uw branche kunnen we zeker iets moois opzetten. Zal ik een afspraak voor u inplannen?', timestamp: '2026-03-21T09:03:00Z' }], updatedAt: '2026-03-21T09:03:00Z' },
+      { id: 'conv-2', leadInfo: { naam: 'Sophie Bakker', bedrijf: 'Bloom Coaching', telefoon: '+31612345002', email: 'sophie@bloom.nl', branche: 'Coaching', budget: 1500 }, score: 72, status: 'afspraak_gepland', messages: [{ role: 'agent', content: 'Welkom Sophie! Fijn dat u contact opneemt.', timestamp: '2026-03-20T14:00:00Z' }, { role: 'lead', content: 'Ik wil graag meer klanten via WhatsApp bereiken.', timestamp: '2026-03-20T14:01:00Z' }, { role: 'agent', content: 'Uitstekend! Ik heb een afspraak voor u ingepland op donderdag om 10:00.', timestamp: '2026-03-20T14:05:00Z' }], updatedAt: '2026-03-20T14:05:00Z' },
+      { id: 'conv-3', leadInfo: { naam: 'Pieter Jansen', bedrijf: 'Jansen & Zn', telefoon: '+31612345003', email: 'pieter@jansen.nl', branche: 'Bouw', budget: 300 }, score: 28, status: 'niet_gekwalificeerd', messages: [{ role: 'agent', content: 'Hallo Pieter! Waarmee kan ik u helpen?', timestamp: '2026-03-19T11:00:00Z' }, { role: 'lead', content: 'Ik zoek een goedkope website.', timestamp: '2026-03-19T11:01:00Z' }], updatedAt: '2026-03-19T11:01:00Z' },
+      { id: 'conv-4', leadInfo: { naam: 'Lisa van Dijk', bedrijf: 'Yoga Studio Zen', telefoon: '+31612345004', email: 'lisa@yogazen.nl', branche: 'Fitness', budget: 800 }, score: 65, status: 'actief', messages: [{ role: 'agent', content: 'Namaste Lisa! Welkom. Vertel eens over uw yoga studio.', timestamp: '2026-03-21T10:00:00Z' }, { role: 'lead', content: 'We willen onze online boekingen verbeteren.', timestamp: '2026-03-21T10:02:00Z' }], updatedAt: '2026-03-21T10:02:00Z' },
+      { id: 'conv-5', leadInfo: { naam: 'Mark de Boer', bedrijf: 'DeBoer Marketing', telefoon: '+31612345005', email: 'mark@deboer.nl', branche: 'Marketing', budget: 3000 }, score: 92, status: 'gekwalificeerd', messages: [{ role: 'agent', content: 'Welkom Mark! Ik zie dat u interesse heeft in onze diensten.', timestamp: '2026-03-20T16:00:00Z' }, { role: 'lead', content: 'Ja, ik wil graag de volledige funnel automatiseren.', timestamp: '2026-03-20T16:01:00Z' }, { role: 'agent', content: 'Met uw budget en ervaring in marketing is dat zeker haalbaar. Laten we een kennismakingsgesprek plannen!', timestamp: '2026-03-20T16:03:00Z' }], updatedAt: '2026-03-20T16:03:00Z' },
+    ];
 
-// ============ MOCK DATA (demo fallback) ============
-const MOCK_TENANTS = [
-  { id:'bureau-assist', businessName:'Bureau Assist', agentName:'Lisa', agentTone:'Vriendelijk en professioneel', qualificationQuestions:['Wat is uw branche?','Hoeveel nieuwe klanten wilt u per maand?','Wat is uw maandelijks marketingbudget?','Heeft u eerder online advertenties gedaan?'], minBudget:500, idealIndustries:['E-commerce','SaaS','Consulting'], bookingUrl:'https://calendly.com/bureau-assist', anthropicApiKey:'sk-ant-***', twilioAccountSid:'AC***', twilioAuthToken:'***', twilioPhoneNumber:'whatsapp:+31612345678', webhookSecret:'secret123', createdAt:'2025-01-15T10:00:00Z', updatedAt:'2025-03-20T14:30:00Z' },
-  { id:'digital-growth', businessName:'Digital Growth Agency', agentName:'Max', agentTone:'Energiek en resultaatgericht', qualificationQuestions:['In welke sector bent u actief?','Wat is uw huidige omzet?','Hoeveel wilt u investeren in marketing?'], minBudget:1000, idealIndustries:['Retail','Horeca','Vastgoed'], bookingUrl:'https://calendly.com/digital-growth', anthropicApiKey:'sk-ant-***', twilioAccountSid:'AC***', twilioAuthToken:'***', twilioPhoneNumber:'whatsapp:+31687654321', webhookSecret:'secret456', createdAt:'2025-02-01T09:00:00Z', updatedAt:'2025-03-19T16:45:00Z' }
-];
+    const MOCK_STATS = { totaal: 47, actief: 12, gekwalificeerd: 23, niet_gekwalificeerd: 7, afspraak_gepland: 18, gemiddeldeScore: 68 };
+    const MOCK_CHART = [5, 8, 3, 12, 7, 9, 6];
 
-const MOCK_CONVERSATIONS = [
-  { id:'whatsapp:+31611111111', tenantId:'bureau-assist', leadInfo:{ naam:'Jan de Vries', bedrijf:'Vries Digital', branche:'E-commerce', budget:2000, telefoon:'+31611111111', email:'jan@vriesdigital.nl' }, messages:[
-    { role:'agent', content:'Hoi Jan! Welkom bij Bureau Assist. Ik ben Lisa, je digitale assistent. Leuk dat je interesse hebt! Mag ik je een paar vragen stellen om te kijken hoe we je het beste kunnen helpen?', timestamp:'2025-03-20T09:00:00Z' },
-    { role:'lead', content:'Ja natuurlijk, ga je gang!', timestamp:'2025-03-20T09:01:00Z' },
-    { role:'agent', content:'Top! In welke branche is jouw bedrijf actief?', timestamp:'2025-03-20T09:01:30Z' },
-    { role:'lead', content:'Ik heb een e-commerce webshop voor duurzame producten', timestamp:'2025-03-20T09:03:00Z' },
-    { role:'agent', content:'Gaaf, duurzaamheid is een mooie niche! Hoeveel nieuwe klanten zou je per maand willen aantrekken?', timestamp:'2025-03-20T09:03:30Z' },
-    { role:'lead', content:'Zo\'n 50-100 nieuwe klanten per maand zou ideaal zijn', timestamp:'2025-03-20T09:05:00Z' },
-    { role:'agent', content:'Dat klinkt als een ambitieus maar haalbaar doel! Wat is je huidige maandelijks marketingbudget?', timestamp:'2025-03-20T09:05:30Z' },
-    { role:'lead', content:'Ik kan zo\'n 2000 euro per maand besteden', timestamp:'2025-03-20T09:07:00Z' },
-    { role:'agent', content:'Uitstekend! Met dat budget kunnen we zeker mooie resultaten behalen. Ik zie dat je perfect past bij wat we doen. Laat me een afspraak voor je inplannen met ons team!', timestamp:'2025-03-20T09:07:30Z' }
-  ], status:'afspraak_gepland', score:92, createdAt:'2025-03-20T09:00:00Z', updatedAt:'2025-03-20T09:07:30Z' },
-  { id:'whatsapp:+31622222222', tenantId:'bureau-assist', leadInfo:{ naam:'Sophie Bakker', bedrijf:'Bakker & Co', branche:'Consulting', budget:800, telefoon:'+31622222222', email:'sophie@bakkerco.nl' }, messages:[
-    { role:'agent', content:'Hoi Sophie! Ik ben Lisa van Bureau Assist. Fijn dat je contact opneemt! Hoe kan ik je helpen?', timestamp:'2025-03-20T10:00:00Z' },
-    { role:'lead', content:'Ik ben benieuwd naar jullie marketing diensten', timestamp:'2025-03-20T10:02:00Z' },
-    { role:'agent', content:'Leuk! Mag ik vragen in welke sector je bedrijf actief is?', timestamp:'2025-03-20T10:02:30Z' },
-    { role:'lead', content:'Management consulting, vooral voor het MKB', timestamp:'2025-03-20T10:04:00Z' },
-    { role:'agent', content:'Interessant! En hoeveel nieuwe klanten zou je maandelijks willen bereiken?', timestamp:'2025-03-20T10:04:30Z' },
-    { role:'lead', content:'Een stuk of 10-15 kwalitatieve leads per maand', timestamp:'2025-03-20T10:06:00Z' }
-  ], status:'gekwalificeerd', score:78, createdAt:'2025-03-20T10:00:00Z', updatedAt:'2025-03-20T10:06:00Z' },
-  { id:'whatsapp:+31633333333', tenantId:'bureau-assist', leadInfo:{ naam:'Ahmed Hassan', bedrijf:'Hassan IT', branche:'IT Services', budget:300, telefoon:'+31633333333', email:'ahmed@hassanit.nl' }, messages:[
-    { role:'agent', content:'Welkom Ahmed! Ik ben Lisa. Fijn dat je interesse hebt in Bureau Assist!', timestamp:'2025-03-20T11:00:00Z' },
-    { role:'lead', content:'Hallo, ik zoek marketing hulp voor mijn IT bedrijf', timestamp:'2025-03-20T11:01:00Z' },
-    { role:'agent', content:'Zeker! Wat is je maandelijks budget voor marketing?', timestamp:'2025-03-20T11:01:30Z' },
-    { role:'lead', content:'Ik dacht aan zo\'n 300 euro per maand', timestamp:'2025-03-20T11:03:00Z' }
-  ], status:'niet_gekwalificeerd', score:35, createdAt:'2025-03-20T11:00:00Z', updatedAt:'2025-03-20T11:03:00Z' },
-  { id:'whatsapp:+31644444444', tenantId:'bureau-assist', leadInfo:{ naam:'Emma Jansen', bedrijf:'Jansen Retail', branche:'Retail', telefoon:'+31644444444' }, messages:[
-    { role:'agent', content:'Hoi Emma! Ik ben Lisa, welkom bij Bureau Assist. Waarmee kan ik je helpen?', timestamp:'2025-03-20T14:00:00Z' },
-    { role:'lead', content:'Ik wil graag meer weten over online marketing voor mijn winkel', timestamp:'2025-03-20T14:02:00Z' }
-  ], status:'actief', score:20, createdAt:'2025-03-20T14:00:00Z', updatedAt:'2025-03-20T14:02:00Z' },
-  { id:'whatsapp:+31655555555', tenantId:'digital-growth', leadInfo:{ naam:'Peter van Dijk', bedrijf:'Van Dijk Hotels', branche:'Horeca', budget:3000, telefoon:'+31655555555', email:'peter@vandijkhotels.nl' }, messages:[
-    { role:'agent', content:'Hey Peter! Ik ben Max van Digital Growth Agency. Welkom! Vertel, wat kunnen we voor je betekenen?', timestamp:'2025-03-19T16:00:00Z' },
-    { role:'lead', content:'Ik wil de online aanwezigheid van mijn hotelketen verbeteren', timestamp:'2025-03-19T16:02:00Z' },
-    { role:'agent', content:'Dat is precies waar wij goed in zijn! Hoeveel wil je investeren in online marketing?', timestamp:'2025-03-19T16:02:30Z' },
-    { role:'lead', content:'We hebben 3000 euro per maand beschikbaar', timestamp:'2025-03-19T16:04:00Z' },
-    { role:'agent', content:'Uitstekend budget! Daarmee kunnen we echt impact maken. Zullen we een strategiegesprek inplannen?', timestamp:'2025-03-19T16:04:30Z' },
-    { role:'lead', content:'Ja graag, plan maar in!', timestamp:'2025-03-19T16:05:00Z' }
-  ], status:'afspraak_gepland', score:95, createdAt:'2025-03-19T16:00:00Z', updatedAt:'2025-03-19T16:05:00Z' },
-  { id:'whatsapp:+31666666666', tenantId:'digital-growth', leadInfo:{ naam:'Lisa de Boer', bedrijf:'De Boer Vastgoed', branche:'Vastgoed', budget:1500, telefoon:'+31666666666', email:'lisa@deboervastgoed.nl' }, messages:[
-    { role:'agent', content:'Hoi Lisa! Max hier van Digital Growth. Leuk dat je contact opneemt!', timestamp:'2025-03-20T08:00:00Z' },
-    { role:'lead', content:'Ik ben op zoek naar meer leads voor mijn vastgoedkantoor', timestamp:'2025-03-20T08:01:00Z' },
-    { role:'agent', content:'Vastgoed is een van onze specialiteiten! Hoeveel leads per maand zoek je?', timestamp:'2025-03-20T08:01:30Z' },
-    { role:'lead', content:'Minimaal 20 serieuze leads per maand', timestamp:'2025-03-20T08:03:00Z' }
-  ], status:'gekwalificeerd', score:82, createdAt:'2025-03-20T08:00:00Z', updatedAt:'2025-03-20T08:03:00Z' }
-];
+    /* ===== INIT ===== */
+    loadData();
+    setInterval(() => { if (currentTenantId) loadTenantData(); }, 10000);
 
-const MOCK_CHART_DATA = [
-  { label:'Ma', value:8 }, { label:'Di', value:12 }, { label:'Wo', value:6 },
-  { label:'Do', value:15 }, { label:'Vr', value:10 }, { label:'Za', value:4 },
-  { label:'Zo', value:3 }
-];
-
-// ============ INIT ============
-document.addEventListener('DOMContentLoaded', () => {
-  loadAll();
-  startAutoRefresh();
-  renderQuestions();
-});
-
-// ============ DATA FETCHING ============
-async function loadAll() {
-  await Promise.all([loadTenants(), loadConversations()]);
-  renderDashboard();
-  renderChatList();
-  renderTenantsGrid();
-}
-
-async function loadTenants() {
-  try {
-    const r = await fetch('/api/tenants');
-    if (!r.ok) throw new Error();
-    const data = await r.json();
-    allTenants = data.length ? data : MOCK_TENANTS;
-  } catch { allTenants = MOCK_TENANTS; }
-  renderTenantSelect();
-}
-
-async function loadConversations() {
-  try {
-    const r = await fetch('/conversations');
-    if (!r.ok) throw new Error();
-    const data = await r.json();
-    allConversations = data.length ? data : MOCK_CONVERSATIONS;
-  } catch { allConversations = MOCK_CONVERSATIONS; }
-  document.getElementById('convCount').textContent = allConversations.length;
-}
-
-function getFiltered() {
-  if (!selectedTenantId) return allConversations;
-  return allConversations.filter(c => c.tenantId === selectedTenantId);
-}
-
-// ============ AUTO REFRESH ============
-function startAutoRefresh() {
-  if (autoRefreshInterval) clearInterval(autoRefreshInterval);
-  if (!autoRefreshEnabled) return;
-  autoRefreshInterval = setInterval(() => {
-    loadConversations().then(() => {
-      renderDashboard();
-      renderChatList();
-      if (selectedConvId) renderChatMessages(selectedConvId);
-    });
-  }, 10000);
-}
-
-function toggleAutoRefresh() {
-  autoRefreshEnabled = document.getElementById('settingAutoRefresh').checked;
-  startAutoRefresh();
-}
-
-function refreshAll() {
-  loadAll();
-}
-
-// ============ NAVIGATION ============
-function switchPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelector(`.nav-item[data-page="${page}"]`).classList.add('active');
-  const titles = { dashboard:'Dashboard', gesprekken:'Gesprekken', tenants:'Tenants', instellingen:'Instellingen' };
-  document.getElementById('pageTitle').textContent = titles[page] || page;
-  if (page === 'gesprekken') renderChatList();
-  if (page === 'tenants') renderTenantsGrid();
-  // Close sidebar on mobile
-  if (window.innerWidth <= 768) toggleSidebar(false);
-}
-
-function toggleSidebar(force) {
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebarOverlay');
-  const isOpen = force !== undefined ? force : !sb.classList.contains('open');
-  sb.classList.toggle('open', isOpen);
-  ov.classList.toggle('open', isOpen);
-}
-
-// ============ TENANT SELECT ============
-function renderTenantSelect() {
-  const sel = document.getElementById('tenantSelect');
-  sel.innerHTML = '<option value="">Alle tenants</option>';
-  allTenants.forEach(t => {
-    sel.innerHTML += `<option value="${t.id}">${t.businessName}</option>`;
-  });
-}
-
-function onTenantChange() {
-  selectedTenantId = document.getElementById('tenantSelect').value;
-  renderDashboard();
-  renderChatList();
-}
-
-// ============ DASHBOARD RENDER ============
-function renderDashboard() {
-  const convs = getFiltered();
-  const total = convs.length;
-  const qualified = convs.filter(c => c.status === 'gekwalificeerd' || c.status === 'afspraak_gepland').length;
-  const appointments = convs.filter(c => c.status === 'afspraak_gepland').length;
-  const conversion = total ? Math.round((qualified / total) * 100) : 0;
-
-  animateNumber('statTotal', total);
-  animateNumber('statQualified', qualified);
-  animateNumber('statAppointments', appointments);
-  document.getElementById('statConversion').textContent = conversion + '%';
-
-  renderChart(convs);
-  renderActivity(convs);
-  renderConvTable(convs);
-}
-
-function animateNumber(id, target) {
-  const el = document.getElementById(id);
-  const current = parseInt(el.textContent) || 0;
-  if (current === target) return;
-  const diff = target - current;
-  const steps = 20;
-  let step = 0;
-  const timer = setInterval(() => {
-    step++;
-    el.textContent = Math.round(current + (diff * step / steps));
-    if (step >= steps) { el.textContent = target; clearInterval(timer); }
-  }, 25);
-}
-
-function renderChart(convs) {
-  const container = document.getElementById('chartContainer');
-  // Group by day (last 7 days)
-  const days = ['Zo','Ma','Di','Wo','Do','Vr','Za'];
-  const chartData = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const dayStr = days[d.getDay()];
-    const count = convs.filter(c => {
-      const cd = new Date(c.createdAt);
-      return cd.toDateString() === d.toDateString();
-    }).length;
-    chartData.push({ label: dayStr, value: count });
-  }
-  // If no data, use mock
-  const data = chartData.some(d => d.value > 0) ? chartData : MOCK_CHART_DATA;
-  const max = Math.max(...data.map(d => d.value), 1);
-
-  container.innerHTML = data.map(d => `
-    <div class="chart-bar-wrap">
-      <div class="chart-bar" style="height:${Math.max((d.value / max) * 100, 5)}%;">
-        <div class="chart-bar-tooltip">${d.value} leads</div>
-      </div>
-      <span class="chart-label">${d.label}</span>
-    </div>
-  `).join('');
-
-  // Animate bars in
-  setTimeout(() => {
-    container.querySelectorAll('.chart-bar').forEach((bar, i) => {
-      const h = bar.style.height;
-      bar.style.height = '5%';
-      setTimeout(() => { bar.style.height = h; }, i * 80);
-    });
-  }, 50);
-}
-
-function renderActivity(convs) {
-  const list = document.getElementById('activityList');
-  const sorted = [...convs].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 6);
-  if (!sorted.length) {
-    list.innerHTML = '<div class="empty-state"><p>Geen recente activiteit</p></div>';
-    return;
-  }
-  const colors = ['#7C3AED','#06B6D4','#22C55E','#F59E0B','#EF4444','#3B82F6'];
-  list.innerHTML = sorted.map((c, i) => {
-    const name = c.leadInfo?.naam || 'Onbekend';
-    const initial = name.charAt(0).toUpperCase();
-    const lastMsg = c.messages?.length ? c.messages[c.messages.length - 1].content : '';
-    return `
-      <div class="activity-item" onclick="switchPage('gesprekken');selectChat('${c.id}');">
-        <div class="activity-avatar" style="background:${colors[i % colors.length]}">${initial}</div>
-        <div class="activity-info">
-          <div class="activity-name">${esc(name)}</div>
-          <div class="activity-msg">${esc(lastMsg.substring(0, 60))}</div>
-        </div>
-        <div class="activity-meta">
-          <span class="badge badge-${c.status}">${statusLabel(c.status)}</span>
-          <div class="activity-time">${timeAgo(c.updatedAt)}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderConvTable(convs) {
-  const body = document.getElementById('convTableBody');
-  const sorted = [...convs].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-  document.getElementById('convTableCount').textContent = `${sorted.length} gesprekken`;
-
-  if (!sorted.length) {
-    body.innerHTML = '<div class="empty-state"><p>Geen gesprekken gevonden</p></div>';
-    return;
-  }
-  const colors = ['#7C3AED','#06B6D4','#22C55E','#F59E0B','#EF4444','#3B82F6'];
-  body.innerHTML = sorted.map((c, i) => {
-    const name = c.leadInfo?.naam || 'Onbekend';
-    const company = c.leadInfo?.bedrijf || '—';
-    const initial = name.charAt(0).toUpperCase();
-    const scoreColor = c.score >= 70 ? 'var(--success)' : c.score >= 40 ? 'var(--warning)' : 'var(--danger)';
-    return `
-      <div class="conv-row" onclick="switchPage('gesprekken');selectChat('${c.id}');">
-        <div class="conv-lead">
-          <div class="conv-lead-avatar" style="background:${colors[i % colors.length]}">${initial}</div>
-          <div>
-            <div class="conv-lead-name">${esc(name)}</div>
-            <div class="conv-lead-company">${esc(company)}</div>
-          </div>
-        </div>
-        <div><span class="badge badge-${c.status}">${statusLabel(c.status)}</span></div>
-        <div class="conv-score" style="color:${scoreColor}">${c.score || 0}</div>
-        <div style="font-size:13px;color:var(--text-dim);">${c.messages?.length || 0}</div>
-        <div class="conv-time">${timeAgo(c.updatedAt)}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-// ============ GESPREKKEN RENDER ============
-function renderChatList() {
-  const list = document.getElementById('chatList');
-  const convs = getFiltered().sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-  const colors = ['#7C3AED','#06B6D4','#22C55E','#F59E0B','#EF4444','#3B82F6'];
-
-  if (!convs.length) {
-    list.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><p>Geen gesprekken</p></div>';
-    return;
-  }
-  list.innerHTML = convs.map((c, i) => {
-    const name = c.leadInfo?.naam || 'Onbekend';
-    const initial = name.charAt(0).toUpperCase();
-    const lastMsg = c.messages?.length ? c.messages[c.messages.length - 1].content : '';
-    const isActive = c.id === selectedConvId ? ' active' : '';
-    return `
-      <div class="chat-item${isActive}" onclick="selectChat('${c.id}')">
-        <div class="activity-avatar" style="background:${colors[i % colors.length]}">${initial}</div>
-        <div class="chat-item-info">
-          <div class="chat-item-name">${esc(name)}</div>
-          <div class="chat-item-preview">${esc(lastMsg.substring(0, 45))}</div>
-        </div>
-        <div class="chat-item-meta">
-          <span class="badge badge-${c.status}" style="font-size:10px;padding:2px 6px;">${statusLabel(c.status)}</span>
-          <div class="chat-item-time">${timeAgo(c.updatedAt)}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function selectChat(id) {
-  selectedConvId = id;
-  renderChatList();
-  renderChatMessages(id);
-  renderLeadPanel(id);
-}
-
-function renderChatMessages(id) {
-  const conv = allConversations.find(c => c.id === id);
-  if (!conv) return;
-
-  const name = conv.leadInfo?.naam || 'Onbekend';
-  document.getElementById('chatAvatar').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('chatName').textContent = name;
-  document.getElementById('chatStatus').innerHTML = `<span class="badge badge-${conv.status}">${statusLabel(conv.status)}</span> &middot; Score: ${conv.score || 0}`;
-
-  const container = document.getElementById('chatMessages');
-  container.innerHTML = (conv.messages || []).map(m => `
-    <div class="chat-msg ${m.role}">
-      ${esc(m.content)}
-      <div class="chat-msg-time">${formatTime(m.timestamp)}</div>
-    </div>
-  `).join('');
-  container.scrollTop = container.scrollHeight;
-}
-
-function renderLeadPanel(id) {
-  const conv = allConversations.find(c => c.id === id);
-  if (!conv) return;
-  const li = conv.leadInfo || {};
-  const name = li.naam || 'Onbekend';
-
-  document.getElementById('leadPanelAvatar').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('leadPanelName').textContent = name;
-  document.getElementById('leadPanelCompany').textContent = li.bedrijf || '';
-
-  const scoreColor = conv.score >= 70 ? 'var(--success)' : conv.score >= 40 ? 'var(--warning)' : 'var(--danger)';
-  const fields = document.getElementById('leadPanelFields');
-  fields.innerHTML = `
-    <div class="lead-field">
-      <div class="lead-field-label">Status</div>
-      <span class="badge badge-${conv.status}">${statusLabel(conv.status)}</span>
-    </div>
-    <div class="lead-field">
-      <div class="lead-field-label">Score</div>
-      <div class="lead-field-value" style="font-size:24px;font-weight:800;color:${scoreColor};">${conv.score || 0}/100</div>
-      <div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${conv.score || 0}%;background:${scoreColor};"></div></div></div>
-    </div>
-    ${li.telefoon ? `<div class="lead-field"><div class="lead-field-label">Telefoon</div><div class="lead-field-value">${esc(li.telefoon)}</div></div>` : ''}
-    ${li.email ? `<div class="lead-field"><div class="lead-field-label">Email</div><div class="lead-field-value">${esc(li.email)}</div></div>` : ''}
-    ${li.branche ? `<div class="lead-field"><div class="lead-field-label">Branche</div><div class="lead-field-value">${esc(li.branche)}</div></div>` : ''}
-    ${li.budget ? `<div class="lead-field"><div class="lead-field-label">Budget</div><div class="lead-field-value">&euro;${li.budget}/maand</div></div>` : ''}
-    ${li.website ? `<div class="lead-field"><div class="lead-field-label">Website</div><div class="lead-field-value">${esc(li.website)}</div></div>` : ''}
-    <div class="lead-field"><div class="lead-field-label">Berichten</div><div class="lead-field-value">${conv.messages?.length || 0}</div></div>
-    <div class="lead-field"><div class="lead-field-label">Gestart</div><div class="lead-field-value">${formatDate(conv.createdAt)}</div></div>
-  `;
-}
-
-function filterChats(q) {
-  const items = document.querySelectorAll('.chat-item');
-  q = q.toLowerCase();
-  items.forEach(item => {
-    const text = item.textContent.toLowerCase();
-    item.style.display = text.includes(q) ? '' : 'none';
-  });
-}
-
-async function sendMessage() {
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if (!msg || !selectedConvId) return;
-  input.value = '';
-
-  // Find tenant for this conversation
-  const conv = allConversations.find(c => c.id === selectedConvId);
-  const tenantId = conv?.tenantId || allTenants[0]?.id || 'bureau-assist';
-
-  try {
-    const r = await fetch(`/conversations/${encodeURIComponent(selectedConvId)}/message`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, tenantId })
-    });
-    if (r.ok) {
-      await loadConversations();
-      renderChatMessages(selectedConvId);
-      renderChatList();
-    }
-  } catch {
-    // Add message locally for demo
-    if (conv) {
-      conv.messages.push({ role: 'agent', content: msg, timestamp: new Date().toISOString() });
-      renderChatMessages(selectedConvId);
-    }
-  }
-}
-
-// ============ TENANTS RENDER ============
-function renderTenantsGrid() {
-  const grid = document.getElementById('tenantsGrid');
-  const colors = ['#7C3AED','#06B6D4','#22C55E','#F59E0B','#EF4444','#3B82F6'];
-
-  if (!allTenants.length) {
-    grid.innerHTML = '<div class="empty-state"><div class="icon">&#127970;</div><p>Nog geen tenants aangemaakt</p></div>';
-    return;
-  }
-  grid.innerHTML = allTenants.map((t, i) => {
-    const convCount = allConversations.filter(c => c.tenantId === t.id).length;
-    const activeCount = allConversations.filter(c => c.tenantId === t.id && c.status === 'actief').length;
-    const initial = t.businessName.charAt(0).toUpperCase();
-    return `
-      <div class="tenant-card" onclick="openTenantModal('${t.id}')">
-        <div class="tenant-card-header">
-          <div class="tenant-initial" style="background:${colors[i % colors.length]}">${initial}</div>
-          <div>
-            <div class="tenant-name">${esc(t.businessName)}</div>
-            <div class="tenant-id">${esc(t.id)} &middot; Agent: ${esc(t.agentName)}</div>
-          </div>
-        </div>
-        <div class="tenant-stats">
-          <div class="tenant-stat">
-            <div class="tenant-stat-label">Actieve gesprekken</div>
-            <div class="tenant-stat-value">${activeCount}</div>
-          </div>
-          <div class="tenant-stat">
-            <div class="tenant-stat-label">Totaal leads</div>
-            <div class="tenant-stat-value">${convCount}</div>
-          </div>
-          <div class="tenant-stat">
-            <div class="tenant-stat-label">Vragen</div>
-            <div class="tenant-stat-value">${t.qualificationQuestions?.length || 0}</div>
-          </div>
-          <div class="tenant-stat">
-            <div class="tenant-stat-label">Min. budget</div>
-            <div class="tenant-stat-value">&euro;${t.minBudget || 0}</div>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-// ============ TENANT MODAL ============
-function openTenantModal(id) {
-  const modal = document.getElementById('tenantModal');
-  const isEdit = !!id;
-  document.getElementById('tenantModalTitle').textContent = isEdit ? 'Tenant bewerken' : 'Nieuwe tenant';
-  document.getElementById('tenantDeleteBtn').style.display = isEdit ? '' : 'none';
-
-  if (isEdit) {
-    const t = allTenants.find(x => x.id === id);
-    if (!t) return;
-    document.getElementById('tenantEditId').value = t.id;
-    document.getElementById('tenantFormId').value = t.id;
-    document.getElementById('tenantFormId').disabled = true;
-    document.getElementById('tenantFormBusiness').value = t.businessName || '';
-    document.getElementById('tenantFormAgent').value = t.agentName || '';
-    document.getElementById('tenantFormBudget').value = t.minBudget || '';
-    document.getElementById('tenantFormTone').value = t.agentTone || '';
-    document.getElementById('tenantFormQuestions').value = (t.qualificationQuestions || []).join('\n');
-    document.getElementById('tenantFormIndustries').value = (t.idealIndustries || []).join(', ');
-    document.getElementById('tenantFormBooking').value = t.bookingUrl || '';
-    document.getElementById('tenantFormAnthropicKey').value = t.anthropicApiKey || '';
-    document.getElementById('tenantFormWebhookSecret').value = t.webhookSecret || '';
-    document.getElementById('tenantFormTwilioSid').value = t.twilioAccountSid || '';
-    document.getElementById('tenantFormTwilioToken').value = t.twilioAuthToken || '';
-    document.getElementById('tenantFormTwilioPhone').value = t.twilioPhoneNumber || '';
-  } else {
-    document.getElementById('tenantEditId').value = '';
-    document.getElementById('tenantFormId').disabled = false;
-    ['tenantFormId','tenantFormBusiness','tenantFormAgent','tenantFormBudget','tenantFormTone','tenantFormQuestions','tenantFormIndustries','tenantFormBooking','tenantFormAnthropicKey','tenantFormWebhookSecret','tenantFormTwilioSid','tenantFormTwilioToken','tenantFormTwilioPhone'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = '';
-    });
-  }
-  modal.classList.add('open');
-}
-
-function closeTenantModal() {
-  document.getElementById('tenantModal').classList.remove('open');
-}
-
-async function saveTenant() {
-  const editId = document.getElementById('tenantEditId').value;
-  const isEdit = !!editId;
-  const data = {
-    id: document.getElementById('tenantFormId').value.trim(),
-    businessName: document.getElementById('tenantFormBusiness').value.trim(),
-    agentName: document.getElementById('tenantFormAgent').value.trim(),
-    minBudget: parseInt(document.getElementById('tenantFormBudget').value) || 0,
-    agentTone: document.getElementById('tenantFormTone').value.trim(),
-    qualificationQuestions: document.getElementById('tenantFormQuestions').value.split('\n').map(q => q.trim()).filter(Boolean),
-    idealIndustries: document.getElementById('tenantFormIndustries').value.split(',').map(i => i.trim()).filter(Boolean),
-    bookingUrl: document.getElementById('tenantFormBooking').value.trim(),
-    anthropicApiKey: document.getElementById('tenantFormAnthropicKey').value.trim(),
-    webhookSecret: document.getElementById('tenantFormWebhookSecret').value.trim(),
-    twilioAccountSid: document.getElementById('tenantFormTwilioSid').value.trim(),
-    twilioAuthToken: document.getElementById('tenantFormTwilioToken').value.trim(),
-    twilioPhoneNumber: document.getElementById('tenantFormTwilioPhone').value.trim()
-  };
-
-  if (!data.id || !data.businessName || !data.agentName) {
-    alert('Vul minimaal Tenant ID, Bedrijfsnaam en Agent naam in.');
-    return;
-  }
-
-  try {
-    const url = isEdit ? `/api/tenants/${editId}` : '/api/tenants';
-    const method = isEdit ? 'PUT' : 'POST';
-    const r = await fetch(url, {
-      method, headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (r.ok) {
-      closeTenantModal();
+    /* ===== DATA LOADING ===== */
+    async function loadData() {
       await loadTenants();
-      renderTenantsGrid();
-    } else {
-      const err = await r.json().catch(() => ({}));
-      alert(err.error || 'Fout bij opslaan');
+      if (currentTenantId) await loadTenantData();
+      else loadDashboardWithMock();
     }
-  } catch {
-    // Demo mode: add locally
-    if (isEdit) {
-      const idx = allTenants.findIndex(t => t.id === editId);
-      if (idx >= 0) allTenants[idx] = { ...allTenants[idx], ...data };
-    } else {
-      allTenants.push({ ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+
+    async function loadTenants() {
+      try {
+        const res = await fetch('/api/tenants');
+        if (!res.ok) throw new Error('API error');
+        allTenants = await res.json();
+        usingMockData = false;
+      } catch {
+        allTenants = MOCK_TENANTS;
+        usingMockData = true;
+      }
+      const sel = document.getElementById('tenantSelect');
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">Alle tenants</option>';
+      allTenants.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t.id; o.textContent = t.businessName;
+        sel.appendChild(o);
+      });
+      if (cur && allTenants.find(t => t.id === cur)) sel.value = cur;
+      renderTenantGrid();
     }
-    closeTenantModal();
-    renderTenantsGrid();
-    renderTenantSelect();
-  }
-}
 
-async function deleteTenant() {
-  const id = document.getElementById('tenantEditId').value;
-  if (!id || !confirm(`Weet je zeker dat je tenant "${id}" wilt verwijderen?`)) return;
-  try {
-    await fetch(`/api/tenants/${id}`, { method: 'DELETE' });
-  } catch { /* demo mode */ }
-  allTenants = allTenants.filter(t => t.id !== id);
-  closeTenantModal();
-  renderTenantsGrid();
-  renderTenantSelect();
-}
+    async function onTenantChange() {
+      currentTenantId = document.getElementById('tenantSelect').value;
+      if (currentTenantId) {
+        await loadTenantData();
+        loadSettingsForTenant();
+      } else {
+        loadDashboardWithMock();
+      }
+    }
 
-// ============ SETTINGS ============
-let settingsQuestions = ['Wat is uw branche?', 'Hoeveel nieuwe klanten wilt u per maand?', 'Wat is uw maandelijks marketingbudget?', 'Heeft u eerder online advertenties gedaan?'];
+    async function loadTenantData() {
+      if (!currentTenantId) return;
+      try {
+        const [convRes, statsRes] = await Promise.all([
+          fetch(`/api/tenants/${currentTenantId}/conversations`),
+          fetch(`/api/tenants/${currentTenantId}/stats`)
+        ]);
+        if (!convRes.ok || !statsRes.ok) throw new Error('API error');
+        currentConversations = await convRes.json();
+        const stats = await statsRes.json();
+        updateDashboard(stats, currentConversations);
+      } catch {
+        currentConversations = MOCK_CONVERSATIONS;
+        updateDashboard(MOCK_STATS, MOCK_CONVERSATIONS);
+      }
+      renderConvList();
+    }
 
-function renderQuestions() {
-  const list = document.getElementById('questionList');
-  list.innerHTML = settingsQuestions.map((q, i) => `
-    <div class="question-item">
-      <span class="drag-handle">&#8942;&#8942;</span>
-      <span class="question-text">${esc(q)}</span>
-      <button class="remove-btn" onclick="removeQuestion(${i})">&times;</button>
-      ${i > 0 ? `<button class="remove-btn" onclick="moveQuestion(${i},-1)">&#8593;</button>` : ''}
-      ${i < settingsQuestions.length - 1 ? `<button class="remove-btn" onclick="moveQuestion(${i},1)">&#8595;</button>` : ''}
-    </div>
-  `).join('');
-}
+    function loadDashboardWithMock() {
+      currentConversations = MOCK_CONVERSATIONS;
+      updateDashboard(MOCK_STATS, MOCK_CONVERSATIONS);
+      renderConvList();
+    }
 
-function addQuestion() {
-  const input = document.getElementById('newQuestionInput');
-  const q = input.value.trim();
-  if (!q) return;
-  settingsQuestions.push(q);
-  input.value = '';
-  renderQuestions();
-}
+    /* ===== DASHBOARD ===== */
+    function updateDashboard(stats, convs) {
+      const total = stats.totaal || 0;
+      const qualified = stats.gekwalificeerd || 0;
+      const booked = stats.afspraak_gepland || 0;
+      const conversion = total > 0 ? Math.round((booked / total) * 100) : 0;
 
-function removeQuestion(i) {
-  settingsQuestions.splice(i, 1);
-  renderQuestions();
-}
+      animateNumber('statTotal', total);
+      animateNumber('statQualified', qualified);
+      animateNumber('statBooked', booked);
+      document.getElementById('statConversion').textContent = conversion + '%';
 
-function moveQuestion(i, dir) {
-  const j = i + dir;
-  if (j < 0 || j >= settingsQuestions.length) return;
-  [settingsQuestions[i], settingsQuestions[j]] = [settingsQuestions[j], settingsQuestions[i]];
-  renderQuestions();
-}
+      renderChart(MOCK_CHART);
+      renderRecentTable(convs);
+    }
 
-function saveSettings() {
-  alert('Instellingen opgeslagen!');
-}
+    function animateNumber(id, target) {
+      const el = document.getElementById(id);
+      const start = parseInt(el.textContent) || 0;
+      if (start === target) { el.textContent = target; return; }
+      const steps = 20;
+      const inc = (target - start) / steps;
+      let current = start;
+      let step = 0;
+      const timer = setInterval(() => {
+        step++;
+        current += inc;
+        el.textContent = Math.round(current);
+        if (step >= steps) { el.textContent = target; clearInterval(timer); }
+      }, 25);
+    }
 
-function toggleNotifications() {
-  if (document.getElementById('settingNotifications').checked && 'Notification' in window) {
-    Notification.requestPermission();
-  }
-}
+    function renderChart(data) {
+      const max = Math.max(...data, 1);
+      const days = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+      const today = new Date().getDay();
+      const orderedDays = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = (today - i + 7) % 7;
+        orderedDays.push(days[d === 0 ? 6 : d - 1]);
+      }
+      document.getElementById('barChart').innerHTML = data.map((v, i) =>
+        `<div class="bar-col">
+          <div class="bar" style="height:${(v / max) * 140}px">
+            <span class="bar-val">${v}</span>
+          </div>
+          <span class="bar-label">${orderedDays[i]}</span>
+        </div>`
+      ).join('');
+    }
 
-// ============ SEARCH ============
-function handleSearch(q) {
-  q = q.toLowerCase();
-  if (!q) { renderDashboard(); renderChatList(); return; }
-  // Filter conversations and re-render
-  const page = document.querySelector('.page.active').id;
-  if (page === 'page-dashboard') renderConvTable(getFiltered().filter(c => matchConv(c, q)));
-  if (page === 'page-gesprekken') filterChats(q);
-}
+    function renderRecentTable(convs) {
+      const tbody = document.getElementById('recentTable');
+      if (!convs || convs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="empty">Nog geen gesprekken</td></tr>';
+        return;
+      }
+      const recent = convs.slice(0, 5);
+      tbody.innerHTML = recent.map(c => {
+        const sc = c.score >= 70 ? 'high' : c.score >= 40 ? 'mid' : 'low';
+        const updated = timeAgo(c.updatedAt);
+        return `<tr class="clickable" onclick="navigate('gesprekken',document.querySelector('[data-page=gesprekken]'));setTimeout(()=>openConversation('${c.id}'),100)">
+          <td style="font-weight:600">${esc(c.leadInfo.naam || c.id)}</td>
+          <td style="color:var(--text2)">${esc(c.leadInfo.bedrijf || '-')}</td>
+          <td><div class="score-wrap"><div class="score-bar"><div class="score-fill ${sc}" style="width:${c.score}%"></div></div><span style="font-weight:600;font-size:12px">${c.score}</span></div></td>
+          <td><span class="badge ${c.status}">${c.status.replace('_', ' ')}</span></td>
+          <td style="color:var(--text3);font-size:12px">${updated}</td>
+        </tr>`;
+      }).join('');
+    }
 
-function matchConv(c, q) {
-  const name = (c.leadInfo?.naam || '').toLowerCase();
-  const company = (c.leadInfo?.bedrijf || '').toLowerCase();
-  return name.includes(q) || company.includes(q) || c.status.includes(q);
-}
+    /* ===== GESPREKKEN ===== */
+    function renderConvList() {
+      const container = document.getElementById('convListItems');
+      if (!currentConversations || currentConversations.length === 0) {
+        container.innerHTML = '<div class="empty">Geen gesprekken gevonden</div>';
+        return;
+      }
+      container.innerHTML = currentConversations.map(c => {
+        const initials = (c.leadInfo.naam || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const lastMsg = c.messages.length > 0 ? c.messages[c.messages.length - 1].content.slice(0, 50) + '...' : '';
+        const time = timeAgo(c.updatedAt);
+        const statusColor = c.status === 'gekwalificeerd' ? 'var(--green)' : c.status === 'afspraak_gepland' ? 'var(--orange)' : c.status === 'niet_gekwalificeerd' ? 'var(--red)' : 'var(--blue)';
+        return `<div class="conv-item ${selectedConvId === c.id ? 'active' : ''}" onclick="openConversation('${c.id}')">
+          <div class="conv-avatar">${initials}</div>
+          <div class="conv-info">
+            <div class="conv-name">${esc(c.leadInfo.naam || c.id)}</div>
+            <div class="conv-preview">${esc(lastMsg)}</div>
+          </div>
+          <div class="conv-meta">
+            <span class="conv-time">${time}</span>
+            <div class="conv-badge-sm" style="background:${statusColor}"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
 
-// ============ HELPERS ============
-function statusLabel(s) {
-  const labels = { actief:'Actief', gekwalificeerd:'Gekwalificeerd', niet_gekwalificeerd:'Afgewezen', afspraak_gepland:'Afspraak' };
-  return labels[s] || s;
-}
+    function filterConversations() {
+      const q = document.getElementById('chatSearchInput').value.toLowerCase();
+      const items = document.querySelectorAll('.conv-item');
+      items.forEach(el => {
+        el.style.display = el.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+      });
+    }
 
-function timeAgo(d) {
-  const diff = (Date.now() - new Date(d).getTime()) / 1000;
-  if (diff < 60) return 'Zojuist';
-  if (diff < 3600) return Math.floor(diff / 60) + 'm geleden';
-  if (diff < 86400) return Math.floor(diff / 3600) + 'u geleden';
-  if (diff < 604800) return Math.floor(diff / 86400) + 'd geleden';
-  return new Date(d).toLocaleDateString('nl-NL');
-}
+    function openConversation(id) {
+      selectedConvId = id;
+      const conv = currentConversations.find(c => c.id === id);
+      if (!conv) return;
 
-function formatTime(d) {
-  return new Date(d).toLocaleTimeString('nl-NL', { hour:'2-digit', minute:'2-digit' });
-}
+      renderConvList();
 
-function formatDate(d) {
-  return new Date(d).toLocaleDateString('nl-NL', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
-}
+      document.getElementById('chatNoSelect').style.display = 'none';
+      const active = document.getElementById('chatActive');
+      active.style.display = 'flex';
 
-function esc(s) {
-  if (!s) return '';
-  const div = document.createElement('div');
-  div.textContent = s;
-  return div.innerHTML;
-}
+      document.getElementById('chatConvName').textContent = conv.leadInfo.naam || conv.id;
+      document.getElementById('chatConvSub').textContent = conv.leadInfo.bedrijf || '';
+      const badge = document.getElementById('chatConvBadge');
+      badge.className = 'badge ' + conv.status;
+      badge.textContent = conv.status.replace('_', ' ');
 
-// Close modal on overlay click
-document.getElementById('tenantModal').addEventListener('click', function(e) {
-  if (e.target === this) closeTenantModal();
-});
-</script>
+      // Lead info
+      const info = conv.leadInfo;
+      document.getElementById('chatLeadInfo').innerHTML = `
+        <div class="lead-info-card" style="margin:16px 20px 0">
+          <h4>Lead informatie</h4>
+          ${infoField('Naam', info.naam)}
+          ${infoField('Bedrijf', info.bedrijf)}
+          ${infoField('Telefoon', info.telefoon)}
+          ${infoField('Email', info.email)}
+          ${infoField('Branche', info.branche)}
+          ${infoField('Budget', info.budget ? '\u20AC' + info.budget : '-')}
+          ${infoField('Score', conv.score + '/100')}
+        </div>`;
+
+      // Messages
+      const tenant = allTenants.find(t => t.id === currentTenantId) || allTenants[0];
+      const agentName = tenant ? tenant.agentName : 'Agent';
+      const msgContainer = document.getElementById('chatMessages');
+      msgContainer.innerHTML = conv.messages.map(m => {
+        const time = new Date(m.timestamp).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+        const sender = m.role === 'lead' ? 'Lead' : agentName;
+        return `<div class="msg ${m.role}">
+          ${esc(m.content)}
+          <div class="meta">${sender} &middot; ${time}</div>
+        </div>`;
+      }).join('');
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+    }
+
+    function infoField(label, value) {
+      return `<div class="lead-field"><span class="lbl">${label}</span><span class="val">${esc(value || '-')}</span></div>`;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chatMsgInput');
+      const text = input.value.trim();
+      if (!text || !selectedConvId) return;
+      input.value = '';
+
+      // Add to UI immediately
+      const msgContainer = document.getElementById('chatMessages');
+      msgContainer.innerHTML += `<div class="msg agent">${esc(text)}<div class="meta">Agent &middot; nu</div></div>`;
+      msgContainer.scrollTop = msgContainer.scrollHeight;
+
+      try {
+        await fetch(`/conversations/${selectedConvId}/message`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+      } catch { /* ignore in demo */ }
+    }
+
+    /* ===== TENANTS ===== */
+    function renderTenantGrid() {
+      const grid = document.getElementById('tenantGrid');
+      if (!allTenants.length) {
+        grid.innerHTML = '<div class="empty">Nog geen tenants. Voeg er een toe met de knop hierboven.</div>';
+        return;
+      }
+      grid.innerHTML = allTenants.map(t => `
+        <div class="tenant-card">
+          <h4>${esc(t.businessName)}</h4>
+          <div class="tc-id">ID: ${esc(t.id)}</div>
+          <div class="tc-meta">
+            <div class="tc-item"><span class="ic">&#9679;</span> Agent: ${esc(t.agentName)}</div>
+            <div class="tc-item"><span class="ic">&#9679;</span> Budget: &euro;${t.minBudget}+</div>
+            <div class="tc-item"><span class="ic">&#9679;</span> Vragen: ${(t.qualificationQuestions || []).length}</div>
+            <div class="tc-item"><span class="ic">&#9679;</span> Branches: ${(t.idealIndustries || []).length}</div>
+          </div>
+          <div class="tc-status">
+            <span class="tc-pill ${t.anthropicApiKey ? 'ok' : 'no'}">${t.anthropicApiKey ? '&#10003; API' : '&#10007; API'}</span>
+            <span class="tc-pill ${t.twilioAccountSid ? 'ok' : 'no'}">${t.twilioAccountSid ? '&#10003; Twilio' : '&#10007; Twilio'}</span>
+          </div>
+          <div class="actions">
+            <button class="btn btn-sm" onclick="editTenant('${t.id}')">Bewerken</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTenant('${t.id}','${esc(t.businessName)}')">Verwijderen</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function showTenantForm() {
+      document.getElementById('tenantModalTitle').textContent = 'Nieuwe tenant toevoegen';
+      document.getElementById('tenantSubmitBtn').textContent = 'Aanmaken';
+      document.getElementById('tf_editMode').value = 'create';
+      document.getElementById('tf_id').disabled = false;
+      document.getElementById('tenantForm').reset();
+      document.getElementById('tenantModal').classList.add('show');
+    }
+
+    function editTenant(id) {
+      const t = allTenants.find(x => x.id === id);
+      if (!t) return;
+      document.getElementById('tenantModalTitle').textContent = 'Tenant bewerken';
+      document.getElementById('tenantSubmitBtn').textContent = 'Bijwerken';
+      document.getElementById('tf_editMode').value = 'edit';
+      document.getElementById('tf_id').value = t.id;
+      document.getElementById('tf_id').disabled = true;
+      document.getElementById('tf_businessName').value = t.businessName;
+      document.getElementById('tf_agentName').value = t.agentName;
+      document.getElementById('tf_agentTone').value = t.agentTone || '';
+      document.getElementById('tf_qualificationQuestions').value = (t.qualificationQuestions || []).join('\n');
+      document.getElementById('tf_minBudget').value = t.minBudget || 500;
+      document.getElementById('tf_idealIndustries').value = (t.idealIndustries || []).join(', ');
+      document.getElementById('tf_bookingUrl').value = t.bookingUrl || '';
+      document.getElementById('tf_anthropicApiKey').value = t.anthropicApiKey || '';
+      document.getElementById('tf_twilioAccountSid').value = t.twilioAccountSid || '';
+      document.getElementById('tf_twilioAuthToken').value = t.twilioAuthToken || '';
+      document.getElementById('tf_twilioPhoneNumber').value = t.twilioPhoneNumber || '';
+      document.getElementById('tf_webhookSecret').value = t.webhookSecret || '';
+      document.getElementById('tenantModal').classList.add('show');
+    }
+
+    async function saveTenant(event) {
+      event.preventDefault();
+      const isEdit = document.getElementById('tf_editMode').value === 'edit';
+      const id = document.getElementById('tf_id').value.trim();
+      const data = {
+        id,
+        businessName: document.getElementById('tf_businessName').value.trim(),
+        agentName: document.getElementById('tf_agentName').value.trim(),
+        agentTone: document.getElementById('tf_agentTone').value.trim(),
+        qualificationQuestions: document.getElementById('tf_qualificationQuestions').value.split('\n').map(q => q.trim()).filter(q => q),
+        minBudget: parseInt(document.getElementById('tf_minBudget').value) || 500,
+        idealIndustries: document.getElementById('tf_idealIndustries').value.split(',').map(i => i.trim()).filter(i => i),
+        bookingUrl: document.getElementById('tf_bookingUrl').value.trim(),
+        anthropicApiKey: document.getElementById('tf_anthropicApiKey').value.trim(),
+        twilioAccountSid: document.getElementById('tf_twilioAccountSid').value.trim(),
+        twilioAuthToken: document.getElementById('tf_twilioAuthToken').value.trim(),
+        twilioPhoneNumber: document.getElementById('tf_twilioPhoneNumber').value.trim(),
+        webhookSecret: document.getElementById('tf_webhookSecret').value.trim(),
+      };
+      try {
+        const url = isEdit ? `/api/tenants/${id}` : '/api/tenants';
+        const res = await fetch(url, {
+          method: isEdit ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (res.ok) {
+          document.getElementById('tenantModal').classList.remove('show');
+          await loadData();
+        } else {
+          const err = await res.json();
+          alert('Fout: ' + (err.error || 'Onbekende fout'));
+        }
+      } catch (e) {
+        if (usingMockData) {
+          document.getElementById('tenantModal').classList.remove('show');
+          allTenants.push(data);
+          renderTenantGrid();
+        } else {
+          alert('Netwerkfout: ' + e.message);
+        }
+      }
+    }
+
+    async function deleteTenant(id, name) {
+      if (!confirm(`Weet je zeker dat je "${name}" wilt verwijderen?`)) return;
+      try {
+        const res = await fetch(`/api/tenants/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          if (currentTenantId === id) { currentTenantId = ''; document.getElementById('tenantSelect').value = ''; }
+          await loadData();
+        } else alert('Fout bij verwijderen');
+      } catch {
+        if (usingMockData) {
+          allTenants = allTenants.filter(t => t.id !== id);
+          renderTenantGrid();
+        }
+      }
+    }
+
+    /* ===== SETTINGS ===== */
+    function loadSettingsForTenant() {
+      const t = allTenants.find(x => x.id === currentTenantId);
+      if (!t) return;
+      document.getElementById('set_businessName').value = t.businessName || '';
+      document.getElementById('set_agentName').value = t.agentName || '';
+      document.getElementById('set_agentTone').value = t.agentTone || '';
+      document.getElementById('set_bookingUrl').value = t.bookingUrl || '';
+      document.getElementById('set_minBudget').value = t.minBudget || 500;
+      document.getElementById('set_idealIndustries').value = (t.idealIndustries || []).join(', ');
+      document.getElementById('set_anthropicKey').value = t.anthropicApiKey || '';
+      document.getElementById('set_twilioSid').value = t.twilioAccountSid || '';
+      document.getElementById('set_twilioToken').value = t.twilioAuthToken || '';
+      document.getElementById('set_twilioPhone').value = t.twilioPhoneNumber || '';
+      document.getElementById('set_webhookSecret').value = t.webhookSecret || '';
+      document.getElementById('set_questions').value = (t.qualificationQuestions || []).join('\n');
+    }
+
+    async function saveSettings() {
+      if (!currentTenantId) { alert('Selecteer eerst een tenant'); return; }
+      const data = {
+        businessName: document.getElementById('set_businessName').value.trim(),
+        agentName: document.getElementById('set_agentName').value.trim(),
+        agentTone: document.getElementById('set_agentTone').value.trim(),
+        bookingUrl: document.getElementById('set_bookingUrl').value.trim(),
+        minBudget: parseInt(document.getElementById('set_minBudget').value) || 500,
+        idealIndustries: document.getElementById('set_idealIndustries').value.split(',').map(i => i.trim()).filter(i => i),
+        anthropicApiKey: document.getElementById('set_anthropicKey').value.trim(),
+        twilioAccountSid: document.getElementById('set_twilioSid').value.trim(),
+        twilioAuthToken: document.getElementById('set_twilioToken').value.trim(),
+        twilioPhoneNumber: document.getElementById('set_twilioPhone').value.trim(),
+        webhookSecret: document.getElementById('set_webhookSecret').value.trim(),
+        qualificationQuestions: document.getElementById('set_questions').value.split('\n').map(q => q.trim()).filter(q => q),
+      };
+      try {
+        const res = await fetch(`/api/tenants/${currentTenantId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (res.ok) { await loadTenants(); alert('Instellingen opgeslagen!'); }
+        else alert('Fout bij opslaan');
+      } catch {
+        alert(usingMockData ? 'Opgeslagen (demo modus)' : 'Netwerkfout');
+      }
+    }
+
+    function switchSettings(section, btn) {
+      document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('settings-' + section).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    /* ===== NAVIGATION ===== */
+    function navigate(page, btn) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      btn.classList.add('active');
+      const titles = { dashboard: 'Dashboard', gesprekken: 'Gesprekken', tenants: 'Tenants', instellingen: 'Instellingen' };
+      document.getElementById('pageTitle').textContent = titles[page] || page;
+      // Close mobile sidebar
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('mobileOverlay').classList.remove('show');
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('mobileOverlay').classList.toggle('show');
+    }
+
+    /* ===== UTILS ===== */
+    function esc(text) {
+      if (!text) return '';
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    function timeAgo(dateStr) {
+      if (!dateStr) return '-';
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Zojuist';
+      if (mins < 60) return mins + ' min geleden';
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + ' uur geleden';
+      const days = Math.floor(hours / 24);
+      if (days < 7) return days + ' dag' + (days > 1 ? 'en' : '') + ' geleden';
+      return new Date(dateStr).toLocaleDateString('nl-NL');
+    }
+  </script>
 </body>
 </html>
